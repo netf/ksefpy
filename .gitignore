@@ -1,0 +1,10 @@
+mise.local.toml
+.env
+.env.local
+.env*.local
+
+__pycache__/
+*.pyc
+.venv/
+dist/
+*.egg-info/
