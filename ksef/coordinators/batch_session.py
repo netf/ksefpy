@@ -92,8 +92,11 @@ class AsyncBatchSessionManager:
 
         zip_bytes = context._build_zip()
         encrypted_zip = crypto.encrypt_aes256(zip_bytes, materials.key, materials.iv)
-        plain_meta = crypto.get_metadata(zip_bytes)
-        enc_meta = crypto.get_metadata(encrypted_zip)
+
+        import hashlib
+
+        file_hash = base64.b64encode(hashlib.sha256(zip_bytes).digest()).decode()
+        part_hash = base64.b64encode(hashlib.sha256(encrypted_zip).digest()).decode()
 
         encryption_info = EncryptionInfo.from_session_materials(materials)
 
@@ -102,12 +105,31 @@ class AsyncBatchSessionManager:
         payload = {
             "formCode": form_code.model_dump(by_alias=True),
             "encryption": encryption_info.model_dump(by_alias=True),
-            "invoiceCount": context.invoice_count,
-            "invoicesHash": plain_meta.hash_sha,
-            "invoicesSize": plain_meta.file_size,
-            "encryptedInvoicesHash": enc_meta.hash_sha,
-            "encryptedInvoicesSize": enc_meta.file_size,
-            "encryptedInvoicesContent": base64.b64encode(encrypted_zip).decode(),
+            "batchFile": {
+                "fileSize": len(zip_bytes),
+                "fileHash": file_hash,
+                "fileParts": [
+                    {
+                        "ordinalNumber": 1,
+                        "fileSize": len(encrypted_zip),
+                        "fileHash": part_hash,
+                    }
+                ],
+            },
         }
 
-        return await self._client.batch.open(payload, access_token=access_token)
+        result = await self._client.batch.open(payload, access_token=access_token)
+
+        # Upload encrypted parts to the URLs provided by the API (Azure Blob Storage)
+        part_uploads = result.get("partUploadRequests", [])
+        for upload_info in part_uploads:
+            await self._client.batch.upload_part(
+                upload_info["url"],
+                encrypted_zip,
+                headers={
+                    "Content-Type": "application/octet-stream",
+                    "x-ms-blob-type": "BlockBlob",
+                },
+            )
+
+        return result

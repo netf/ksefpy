@@ -66,14 +66,23 @@ async def main() -> None:
         print("  Invoice sent.")
 
         # Step 4: Build an export request for today.
+        # The API requires `filters` (with dateRange) and `encryption` (for the export package).
         today = datetime.date.today()
+        crypto = await auth._get_or_create_crypto()
+        materials = crypto.generate_session_materials()
+        from ksef.models.sessions import EncryptionInfo
+
+        enc = EncryptionInfo.from_session_materials(materials)
         export_request = {
-            "subjectType": "subject1",
-            "dateRange": {
-                "dateType": "invoicing",
-                "from": f"{today}T00:00:00",
-                "to": f"{today}T23:59:59",
+            "filters": {
+                "subjectType": "subject1",
+                "dateRange": {
+                    "dateType": "invoicing",
+                    "from": f"{today}T00:00:00",
+                    "to": f"{today}T23:59:59",
+                },
             },
+            "encryption": enc.model_dump(by_alias=True),
         }
         print(f"\nRequesting export for date range: {today} → {today}")
 

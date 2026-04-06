@@ -1,14 +1,8 @@
-"""Create and remove test subjects and persons using the testdata API.
+"""Create and remove test subjects and persons on KSeF TEST.
 
-The KSeF TEST environment provides a /testdata namespace for setting up
-integration test fixtures. This lets you create synthetic company/person
-records, assign permissions, and tear everything down afterwards.
-
-This example demonstrates:
-  - Creating a test subject (a company record in the KSeF test registry).
-  - Creating a test person (an individual identity on that subject).
-  - Granting permissions to the test person.
-  - Removing the test person and subject (clean-up).
+Demonstrates the testdata endpoints for setting up integration test data:
+  - create_subject / remove_subject
+  - create_person / remove_person
 
 Run:
     uv run python examples/12_test_data_setup.py
@@ -27,105 +21,73 @@ from ksef.testing import generate_random_nip, generate_test_certificate
 
 
 async def main() -> None:
-    # Step 1: Generate credentials for the acting NIP (the one that will own
-    # the test subject).
-    owner_nip = generate_random_nip()
-    cert_pem, key_pem = generate_test_certificate(owner_nip)
-    print(f"Owner NIP: {owner_nip}")
+    # Generate credentials for authentication.
+    auth_nip = generate_random_nip()
+    cert_pem, key_pem = generate_test_certificate(auth_nip)
 
-    # Step 2: Generate a second NIP that will be our "test subject" company.
+    # Generate separate NIPs for the test entities.
     subject_nip = generate_random_nip()
-    print(f"Test subject NIP: {subject_nip}")
-
-    # Step 3: Generate a third NIP for a test person identity.
     person_nip = generate_random_nip()
-    print(f"Test person NIP: {person_nip}")
+    # PESEL with valid date (900101) and checksum
+    import random
+
+    _PESEL_W = [1, 3, 7, 9, 1, 3, 7, 9, 1, 3]
+    digits = [9, 0, 0, 1, 0, 1] + [random.randint(0, 9) for _ in range(4)]
+    digits.append((10 - sum(d * w for d, w in zip(digits, _PESEL_W)) % 10) % 10)
+    person_pesel = "".join(str(d) for d in digits)
+
+    print(f"Auth NIP:      {auth_nip}")
+    print(f"Subject NIP:   {subject_nip}")
+    print(f"Person NIP:    {person_nip}")
+    print(f"Person PESEL:  {person_pesel}")
 
     async with AsyncKSeFClient(environment=Environment.TEST) as client:
-        # Step 4: Authenticate as the owner.
-        print("\nAuthenticating as owner ...")
+        # Step 1: Authenticate.
+        print("\nAuthenticating ...")
         auth = AsyncAuthCoordinator(client)
         session = await auth.authenticate_with_certificate(
-            nip=owner_nip,
-            certificate=cert_pem,
-            private_key=key_pem,
+            nip=auth_nip, certificate=cert_pem, private_key=key_pem,
         )
-        access_token = await session.get_access_token()
+        token = await session.get_access_token()
         print("  Authentication successful.")
 
-        # Step 5: Create a test subject (company record).
-        print(f"\nCreating test subject {subject_nip} ...")
-        subject_resp = await client.testdata.create_subject(
-            {
-                "identifier": {
-                    "type": "nip",
-                    "value": subject_nip,
-                },
-                "name": f"Test Firma {subject_nip} Sp. z o.o.",
-            },
-            access_token=access_token,
+        # Step 2: Create a test subject.
+        print(f"\nCreating test subject (NIP: {subject_nip}) ...")
+        await client.testdata.create_subject(
+            {"subjectNip": subject_nip, "description": "Integration test subject"},
+            access_token=token,
         )
-        print(f"  Response: {subject_resp}")
+        print("  Subject created.")
 
-        # Step 6: Create a test person on that subject.
-        print(f"\nCreating test person {person_nip} ...")
-        person_resp = await client.testdata.create_person(
+        # Step 3: Create a test person.
+        print(f"\nCreating test person (NIP: {person_nip}, PESEL: {person_pesel}) ...")
+        await client.testdata.create_person(
             {
-                "identifier": {
-                    "type": "nip",
-                    "value": person_nip,
-                },
-                "firstName": "Jan",
-                "lastName": "Kowalski",
+                "nip": person_nip,
+                "pesel": person_pesel,
+                "isBailiff": False,
+                "description": "Integration test person entity",
             },
-            access_token=access_token,
+            access_token=token,
         )
-        print(f"  Response: {person_resp}")
+        print("  Person created.")
 
-        # Step 7: Grant InvoiceRead permission to the test person on the subject.
-        print("\nGranting permissions to test person ...")
-        grant_resp = await client.testdata.grant_permissions(
-            {
-                "subjectIdentifier": {
-                    "type": "nip",
-                    "value": subject_nip,
-                },
-                "personIdentifier": {
-                    "type": "nip",
-                    "value": person_nip,
-                },
-                "permissions": ["InvoiceRead"],
-            },
-            access_token=access_token,
+        # Step 4: Clean up — remove person first, then subject.
+        print(f"\nRemoving test person (NIP: {person_nip}) ...")
+        await client.testdata.remove_person(
+            {"nip": person_nip},
+            access_token=token,
         )
-        print(f"  Response: {grant_resp}")
+        print("  Person removed.")
 
-        # Step 8: Clean up — remove the test person first, then the subject.
-        print(f"\nRemoving test person {person_nip} ...")
-        rm_person = await client.testdata.remove_person(
-            {
-                "identifier": {
-                    "type": "nip",
-                    "value": person_nip,
-                },
-            },
-            access_token=access_token,
+        print(f"\nRemoving test subject (NIP: {subject_nip}) ...")
+        await client.testdata.remove_subject(
+            {"subjectNip": subject_nip},
+            access_token=token,
         )
-        print(f"  Response: {rm_person}")
+        print("  Subject removed.")
 
-        print(f"\nRemoving test subject {subject_nip} ...")
-        rm_subject = await client.testdata.remove_subject(
-            {
-                "identifier": {
-                    "type": "nip",
-                    "value": subject_nip,
-                },
-            },
-            access_token=access_token,
-        )
-        print(f"  Response: {rm_subject}")
-
-        print("\nClean-up complete. Done!")
+        print("\nDone!")
 
 
 if __name__ == "__main__":
