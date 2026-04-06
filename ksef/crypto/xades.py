@@ -46,7 +46,7 @@ class XAdESService:
 
             root = etree.fromstring(xml_document.encode())
 
-            signer = XAdESSigner()
+            signer = XAdESSigner()  # type: ignore
             signed_root = signer.sign(
                 root,
                 key=private_key,

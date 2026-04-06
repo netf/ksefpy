@@ -41,6 +41,10 @@ line-length = 120
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
 
+[tool.pyright]
+pythonVersion = "3.12"
+reportCallIssue = "warning"
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
