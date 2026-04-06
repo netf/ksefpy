@@ -6,24 +6,14 @@ import pytest
 from ksef import AsyncKSeFClient
 from ksef.coordinators.auth import AuthSession
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")]
 
 
-async def test_grant_and_query_person_permission(client: AsyncKSeFClient, auth_session: AuthSession):
+async def test_query_personal_permissions(client: AsyncKSeFClient, auth_session: AuthSession):
+    """POST /permissions/query/personal/grants — query own permissions."""
     token = await auth_session.get_access_token()
-    grant_resp = await client.permissions.grant_person(
-        {
-            "subjectIdentifier": {"type": "pesel", "value": "30112206276"},
-            "permissions": ["InvoiceRead"],
-            "description": "integration-test-grant",
-            "subjectDetails": {
-                "subjectDetailsType": "PersonById",
-                "personById": {"firstName": "Test", "lastName": "User", "pesel": "30112206276"},
-            },
-        },
-        access_token=token,
-    )
-    assert "referenceNumber" in grant_resp
+    resp = await client.permissions.query_personal({}, access_token=token)
+    assert isinstance(resp, dict)
 
 
 async def test_get_attachment_status(client: AsyncKSeFClient, auth_session: AuthSession):

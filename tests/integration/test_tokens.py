@@ -2,14 +2,15 @@
 from __future__ import annotations
 
 import pytest
+import pytest_asyncio
 
 from ksef import AsyncKSeFClient
 from ksef.coordinators.auth import AuthSession
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")]
 
 
-@pytest.fixture(scope="module")
+@pytest_asyncio.fixture(scope="module", loop_scope="session")
 async def generated_token(client: AsyncKSeFClient, auth_session: AuthSession):
     token = await auth_session.get_access_token()
     resp = await client.tokens.generate(

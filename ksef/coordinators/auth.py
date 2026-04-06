@@ -102,9 +102,10 @@ class AsyncAuthCoordinator:
                     continue
                 cert_der = base64.b64decode(cert_b64)
                 cert = _x509.load_der_x509_certificate(cert_der)
-                if "SYMMETRIC_KEY_ENCRYPTION" in usages:
+                usages_lower = [u.lower() for u in usages]
+                if any("symmetric" in u for u in usages_lower):
                     crypto.set_symmetric_key_certificate(cert)
-                if "KSEF_TOKEN_ENCRYPTION" in usages:
+                if any("token" in u and "ksef" in u for u in usages_lower):
                     crypto.set_ksef_token_certificate(cert)
         elif isinstance(data, dict):
             # Legacy dict format
@@ -241,11 +242,16 @@ class AsyncAuthCoordinator:
         challenge_resp = await self._client.auth.get_challenge()
 
         # Build the AuthTokenRequest XML document
+        # Namespace and structure must match the C# client:
+        # - Namespace: http://ksef.mf.gov.pl/auth/token/2.0
+        # - ContextIdentifier uses element name matching the type (e.g. <Nip>)
+        # - SubjectIdentifierType is required
         auth_xml = (
             '<?xml version="1.0" encoding="UTF-8"?>'
-            '<AuthTokenRequest xmlns="http://ksef.mf.gov.pl/schema/auth">'
+            '<AuthTokenRequest xmlns="http://ksef.mf.gov.pl/auth/token/2.0">'
             f"<Challenge>{challenge_resp.challenge}</Challenge>"
-            f"<Identifier><Type>nip</Type><Value>{nip}</Value></Identifier>"
+            f"<ContextIdentifier><Nip>{nip}</Nip></ContextIdentifier>"
+            "<SubjectIdentifierType>certificateSubject</SubjectIdentifierType>"
             "</AuthTokenRequest>"
         )
 

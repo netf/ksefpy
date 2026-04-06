@@ -6,13 +6,13 @@ import pytest
 from ksef import AsyncKSeFClient
 from ksef.coordinators.auth import AuthSession
 
-pytestmark = pytest.mark.integration
+pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")]
 
 
 async def test_list_sessions(client: AsyncKSeFClient, auth_session: AuthSession):
     token = await auth_session.get_access_token()
     resp = await client.session_status.list_sessions(
-        access_token=token, params={"pageSize": "5", "sessionType": "online"}
+        access_token=token, params={"pageSize": "10"}
     )
     assert isinstance(resp, dict)
 

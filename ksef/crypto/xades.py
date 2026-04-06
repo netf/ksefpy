@@ -6,7 +6,7 @@ from ksef.exceptions import KSeFCryptoError
 
 
 class XAdESService:
-    """Sign XML documents using XAdES enveloped signatures.
+    """Sign XML documents using XAdES-BES enveloped signatures.
 
     Requires ``signxml`` to be installed::
 
@@ -20,7 +20,7 @@ class XAdESService:
         certificate: bytes,
         private_key: bytes,
     ) -> str:
-        """Return *xml_document* with an enveloped XAdES/XML-DSig signature.
+        """Return *xml_document* with an enveloped XAdES-BES signature.
 
         Parameters
         ----------
@@ -37,7 +37,7 @@ class XAdESService:
             If ``signxml`` is not installed or signing fails.
         """
         try:
-            from signxml import XMLSigner, methods  # type: ignore[import]
+            from signxml.xades import XAdESSigner  # type: ignore[import]
         except ModuleNotFoundError as exc:
             raise KSeFCryptoError("signxml is not installed. Install it with: pip install ksef[xades]") from exc
 
@@ -46,12 +46,7 @@ class XAdESService:
 
             root = etree.fromstring(xml_document.encode())
 
-            signer = XMLSigner(
-                method=methods.enveloped,
-                signature_algorithm="rsa-sha256",
-                digest_algorithm="sha256",
-            )
-
+            signer = XAdESSigner()
             signed_root = signer.sign(
                 root,
                 key=private_key,

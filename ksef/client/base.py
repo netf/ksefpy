@@ -58,6 +58,8 @@ class BaseClient:
             return None
 
         if 200 <= status < 300:
+            if not response.content or not response.content.strip():
+                return None
             return response.json()
 
         body: dict[str, Any] = {}
