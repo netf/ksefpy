@@ -55,7 +55,7 @@ class SyncWrapper:
                 return self._run_coroutine(attr(*args, **kwargs))
             return _sync_method
         # For sub-client objects, wrap and cache for reuse
-        if hasattr(attr, "__class__") and not isinstance(attr, (str, int, float, bool, type(None))):
+        if not isinstance(attr, (str, int, float, bool, type(None))):
             wrapped = SyncSubClient(attr, self._run_coroutine)
             object.__setattr__(self, name, wrapped)
             return wrapped

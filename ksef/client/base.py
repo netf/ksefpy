@@ -58,7 +58,7 @@ class BaseClient:
             return None
 
         if 200 <= status < 300:
-            if not response.content or not response.content.strip():
+            if not response.content or response.content.isspace():
                 return None
             return response.json()
 

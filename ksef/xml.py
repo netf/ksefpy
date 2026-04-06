@@ -40,15 +40,11 @@ def _et_deserialize[T](xml_bytes: bytes, target_class: type[T]) -> T:
     annotations by mapping child element text by local name.
     """
     root = ET.fromstring(xml_bytes.decode())
-    tag = root.tag
-    ns_prefix = ""
-    if tag.startswith("{"):
-        ns_prefix = "{" + tag[1 : tag.index("}")] + "}"
 
     kwargs: dict[str, object] = {}
     hints = {f.name: f.type for f in dataclasses.fields(target_class)}  # type: ignore[arg-type]
     for child in root:
-        local = child.tag.replace(ns_prefix, "")
+        local = child.tag.partition("}")[2] or child.tag
         if local in hints:
             kwargs[local] = child.text or ""
 
