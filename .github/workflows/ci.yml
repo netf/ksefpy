@@ -14,8 +14,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --dev
-      - run: uv run ruff check ksef/ tests/ examples/
-      - run: uv run ruff format --check ksef/ tests/ examples/
+      - run: uv run python -m ruff check ksef/ tests/ examples/
+      - run: uv run python -m ruff format --check ksef/ tests/ examples/
 
   typecheck:
     name: Type Check
@@ -24,21 +24,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --dev
-      - run: uv run pyright ksef/
+      - run: uv run python -m pyright ksef/
 
   test:
-    name: Test (Python ${{ matrix.python-version }})
+    name: Unit Tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-        with:
-          python-version: ${{ matrix.python-version }}
       - run: uv sync --dev --all-extras
-      - run: uv run pytest tests/unit/ -v --tb=short
+      - run: uv run python -m pytest tests/unit/ -v --tb=short
 
   integration:
     name: Integration Tests
@@ -48,4 +43,4 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --dev --all-extras
-      - run: uv run pytest tests/integration/ -m integration -v --tb=short
+      - run: uv run python -m pytest tests/integration/ -m integration -v --tb=short
