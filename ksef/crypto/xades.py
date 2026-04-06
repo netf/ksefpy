@@ -39,9 +39,7 @@ class XAdESService:
         try:
             from signxml import XMLSigner, methods  # type: ignore[import]
         except ModuleNotFoundError as exc:
-            raise KSeFCryptoError(
-                "signxml is not installed. Install it with: pip install ksef[xades]"
-            ) from exc
+            raise KSeFCryptoError("signxml is not installed. Install it with: pip install ksef[xades]") from exc
 
         try:
             from lxml import etree  # type: ignore[import]
@@ -57,7 +55,7 @@ class XAdESService:
             signed_root = signer.sign(
                 root,
                 key=private_key,
-                cert=certificate,
+                cert=[certificate.decode() if isinstance(certificate, bytes) else certificate],
             )
 
             return etree.tostring(signed_root, encoding="unicode")

@@ -45,6 +45,7 @@ class OnlineSessionContext:
         self._crypto = crypto
         self._materials = session_materials
         self._session_ref = session_reference_number
+        self._closed = False
 
     async def send_invoice_xml(
         self,
@@ -53,21 +54,9 @@ class OnlineSessionContext:
         offline_mode: bool = False,
     ) -> SendInvoiceResponse:
         """Encrypt XML bytes and send to KSeF as an invoice."""
-
-        # Compute metadata of original (plaintext) invoice
         plain_meta = self._crypto.get_metadata(xml_bytes)
-
-        # Encrypt with the session AES key/IV
-        encrypted = self._crypto.encrypt_aes256(
-            xml_bytes,
-            self._materials.key,
-            self._materials.iv,
-        )
-
-        # Compute metadata of encrypted content
+        encrypted = self._crypto.encrypt_aes256(xml_bytes, self._materials.key, self._materials.iv)
         enc_meta = self._crypto.get_metadata(encrypted)
-
-        # Base64-encode the encrypted content for the API
         encrypted_b64 = base64.b64encode(encrypted).decode()
 
         request = SendInvoiceRequest(
@@ -99,7 +88,10 @@ class OnlineSessionContext:
         return await self.send_invoice_xml(xml_bytes, offline_mode=offline_mode)
 
     async def close(self) -> None:
-        """Close the online session."""
+        """Close the online session (idempotent)."""
+        if self._closed:
+            return
+        self._closed = True
         access_token = await self._auth_session.get_access_token()
         await self._client.online.close(self._session_ref, access_token=access_token)
 
@@ -177,4 +169,4 @@ class AsyncOnlineSessionManager:
         try:
             yield ctx
         finally:
-            pass  # Caller is responsible for closing via context manager or explicit close()
+            await ctx.close()

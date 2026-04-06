@@ -18,12 +18,6 @@ class EncryptionInfo(KSeFModel):
     initialization_vector: str
 
 
-class EncryptionData(KSeFModel):
-    cipher_key: bytes
-    cipher_iv: bytes
-    encryption_info: EncryptionInfo
-
-
 class FileMetadata(KSeFModel):
     hash_sha: str = Field(alias="hashSHA")
     file_size: int

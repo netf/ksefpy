@@ -6,6 +6,8 @@ import io
 import zipfile
 from typing import TYPE_CHECKING
 
+from ksef.coordinators.online_session import _FORM_CODE_MAP
+
 if TYPE_CHECKING:
     from ksef.client import AsyncKSeFClient
     from ksef.coordinators.auth import AuthSession
@@ -78,15 +80,7 @@ class AsyncBatchSessionManager:
         """
         import base64
 
-        from ksef.models.sessions import EncryptionInfo, FormCode
-
-        _FORM_CODE_MAP = {
-            "FA(3)": FormCode(
-                system_code="FA (3)",
-                schema_version="FA_2025010901",
-                value="FA",
-            ),
-        }
+        from ksef.models.sessions import EncryptionInfo
 
         form_code = _FORM_CODE_MAP.get(schema_version)
         if form_code is None:

@@ -18,6 +18,10 @@ _serializer = XmlSerializer(
     context=_context,
     config=SerializerConfig(pretty_print=False, encoding="UTF-8"),
 )
+_parser = _XmlParser(
+    context=_context,
+    config=ParserConfig(fail_on_unknown_properties=False),
+)
 
 
 def _has_xsdata_metadata(cls: type) -> bool:
@@ -100,12 +104,7 @@ def deserialize_from_xml[T](xml_bytes: bytes, target_class: type[T]) -> T:
     """
     try:
         if _has_xsdata_metadata(target_class):
-            ctx = XmlContext()
-            parser = _XmlParser(
-                context=ctx,
-                config=ParserConfig(fail_on_unknown_properties=False),
-            )
-            return parser.from_bytes(xml_bytes, target_class)
+            return _parser.from_bytes(xml_bytes, target_class)
         # Plain dataclass without xsdata metadata — use stdlib ET mapper.
         return _et_deserialize(xml_bytes, target_class)
     except KSeFXmlError:

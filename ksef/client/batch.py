@@ -13,9 +13,7 @@ class BatchSessionClient:
         return await self._base.post("sessions/batch", access_token=access_token, json=request)
 
     async def upload_part(self, url: str, encrypted_part: bytes, *, headers: dict[str, str] | None = None) -> None:
-        response = await self._base._http.put(url, content=encrypted_part, headers=headers or {})
-        if response.status_code >= 400:
-            await self._base._handle_response(response)
+        await self._base.put_raw(url, content=encrypted_part, headers=headers)
 
     async def close(self, session_reference_number: str, *, access_token: str) -> None:
         await self._base.post(f"sessions/batch/{session_reference_number}/close", access_token=access_token)

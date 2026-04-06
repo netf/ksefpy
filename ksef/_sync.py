@@ -51,13 +51,14 @@ class SyncWrapper:
     def __getattr__(self, name: str) -> Any:
         attr = getattr(self._async_client, name)
         if inspect.iscoroutinefunction(attr):
-            # Wrap top-level async methods directly
             def _sync_method(*args: Any, **kwargs: Any) -> Any:
                 return self._run_coroutine(attr(*args, **kwargs))
             return _sync_method
-        # For sub-client objects, wrap them in a SyncSubClient
+        # For sub-client objects, wrap and cache for reuse
         if hasattr(attr, "__class__") and not isinstance(attr, (str, int, float, bool, type(None))):
-            return SyncSubClient(attr, self._run_coroutine)
+            wrapped = SyncSubClient(attr, self._run_coroutine)
+            object.__setattr__(self, name, wrapped)
+            return wrapped
         return attr
 
 

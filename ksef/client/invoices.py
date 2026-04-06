@@ -10,13 +10,7 @@ class InvoiceClient:
         self._base = base
 
     async def download(self, ksef_number: str, *, access_token: str) -> bytes:
-        response = await self._base._http.get(
-            self._base._url(f"invoices/ksef/{ksef_number}"),
-            headers=self._base._headers(access_token),
-        )
-        if response.status_code >= 400:
-            await self._base._handle_response(response)
-        return response.content
+        return await self._base.get_raw(f"invoices/ksef/{ksef_number}", access_token=access_token)
 
     async def query_metadata(self, query: dict[str, Any], *, access_token: str) -> dict:
         return await self._base.post("invoices/query/metadata", access_token=access_token, json=query)

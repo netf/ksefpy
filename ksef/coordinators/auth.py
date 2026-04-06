@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import datetime
 import time
 from typing import TYPE_CHECKING
 
@@ -42,8 +43,6 @@ class AuthSession:
 
     def _is_near_expiry(self, token: TokenInfo) -> bool:
         """Return True if token expires within refresh_buffer seconds."""
-        import datetime
-
         now = datetime.datetime.now(datetime.UTC)
         valid_until = token.valid_until
         if valid_until.tzinfo is None:

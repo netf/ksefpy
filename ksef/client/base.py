@@ -141,6 +141,21 @@ class BaseClient:
         response = await self._http.put(self._url(path), headers=h, content=content)
         return await self._handle_response(response)
 
+    async def get_raw(self, path: str, *, access_token: str | None = None) -> bytes:
+        """GET that returns raw response bytes instead of parsed JSON."""
+        response = await self._http.get(self._url(path), headers=self._headers(access_token))
+        if response.status_code >= 400:
+            await self._handle_response(response)
+        return response.content
+
+    async def put_raw(
+        self, url: str, *, content: bytes | None = None, headers: dict[str, str] | None = None
+    ) -> None:
+        """PUT to an absolute URL (for batch part uploads). No base URL prefix."""
+        response = await self._http.put(url, content=content, headers=headers or {})
+        if response.status_code >= 400:
+            await self._handle_response(response)
+
     async def delete(self, path: str, *, access_token: str | None = None) -> Any:
         response = await self._http.delete(self._url(path), headers=self._headers(access_token))
         return await self._handle_response(response)

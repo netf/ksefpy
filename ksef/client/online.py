@@ -23,14 +23,14 @@ class OnlineSessionClient:
         upo_version: str | None = None,
     ) -> OpenOnlineSessionResponse:
         """POST /sessions/online"""
-        headers: dict[str, str] = {}
+        headers: dict[str, str] | None = None
         if upo_version:
-            headers["X-KSeF-Feature"] = f"upo-version:{upo_version}"
+            headers = {"X-KSeF-Feature": f"upo-version:{upo_version}"}
         data = await self._base.post(
             "sessions/online",
             access_token=access_token,
             json=request.model_dump(by_alias=True, exclude_none=True),
-            headers=headers or None,
+            headers=headers,
         )
         return OpenOnlineSessionResponse.model_validate(data)
 

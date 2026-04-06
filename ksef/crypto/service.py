@@ -6,7 +6,7 @@ import base64
 import hashlib
 import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from cryptography.hazmat.primitives import hashes, padding
 from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
@@ -146,36 +146,3 @@ class CryptographyService:
         """Set the certificate used to encrypt KSeF auth tokens."""
         self._ksef_token_cert = cert
 
-    # ------------------------------------------------------------------
-    # Warmup
-    # ------------------------------------------------------------------
-
-    async def warmup(self, client: Any) -> None:
-        """Fetch public-key certificates from the KSeF API and store them.
-
-        Calls ``GET /security/public-key-certificates`` on *client* and
-        populates both certificate slots from the response.
-        """
-        try:
-            from cryptography import x509 as _x509
-
-            response = await client.get("/security/public-key-certificates")
-            data = response.json()
-
-            raw_symmetric = data.get("symmetricKeyEncryptionCertificate") or data.get(
-                "symmetricKey"
-            )
-            raw_token = data.get("tokenEncryptionCertificate") or data.get("token")
-
-            if raw_symmetric:
-                self._symmetric_key_cert = _x509.load_pem_x509_certificate(
-                    raw_symmetric.encode() if isinstance(raw_symmetric, str) else raw_symmetric
-                )
-            if raw_token:
-                self._ksef_token_cert = _x509.load_pem_x509_certificate(
-                    raw_token.encode() if isinstance(raw_token, str) else raw_token
-                )
-        except KSeFCryptoError:
-            raise
-        except Exception as exc:
-            raise KSeFCryptoError(f"Failed to fetch certificates: {exc}") from exc
