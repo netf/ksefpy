@@ -33,11 +33,15 @@ class AuthClient:
         extra_headers: dict[str, str] = {"Content-Type": "application/xml"}
         if enforce_xades_compliance:
             extra_headers["X-KSeF-Feature"] = "enforce-xades-compliance"
+        params: dict[str, str] = {}
+        if verify_certificate_chain:
+            params["verifyCertificateChain"] = "true"
         data = await self._base.post(
             "auth/xades-signature",
             access_token=access_token,
             content=signed_xml.encode("utf-8"),
             headers=extra_headers,
+            params=params or None,
         )
         return SignatureResponse.model_validate(data)
 

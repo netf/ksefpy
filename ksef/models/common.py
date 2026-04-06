@@ -29,7 +29,8 @@ class ContextIdentifier(KSeFModel):
 
 
 class OperationStatusInfo(KSeFModel):
-    code: str
-    description: str | None = None
+    code: int
+    description: str
+    details: list[str] = []
 
 

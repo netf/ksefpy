@@ -108,8 +108,18 @@ class BaseClient:
             details=details,
         )
 
-    async def get(self, path: str, *, access_token: str | None = None, params: dict[str, Any] | None = None) -> Any:
-        response = await self._http.get(self._url(path), headers=self._headers(access_token), params=params)
+    async def get(
+        self,
+        path: str,
+        *,
+        access_token: str | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
+        h = self._headers(access_token)
+        if headers:
+            h.update(headers)
+        response = await self._http.get(self._url(path), headers=h, params=params)
         return await self._handle_response(response)
 
     async def post(
@@ -120,11 +130,12 @@ class BaseClient:
         json: Any = None,
         content: bytes | None = None,
         headers: dict[str, str] | None = None,
+        params: dict[str, Any] | None = None,
     ) -> Any:
         h = self._headers(access_token)
         if headers:
             h.update(headers)
-        response = await self._http.post(self._url(path), headers=h, json=json, content=content)
+        response = await self._http.post(self._url(path), headers=h, json=json, content=content, params=params)
         return await self._handle_response(response)
 
     async def put(

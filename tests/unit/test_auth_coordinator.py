@@ -33,7 +33,7 @@ def _mock_auth_status_complete():
     return respx.get(f"{BASE}/auth/auth-ref-1").mock(
         return_value=httpx.Response(200, json={
             "startDate": "2026-04-06T10:00:00+00:00",
-            "status": {"code": "200", "description": "OK"},
+            "status": {"code": 200, "description": "OK"},
             "isTokenRedeemed": False,
         })
     )

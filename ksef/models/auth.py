@@ -14,7 +14,7 @@ class AuthenticationChallengeResponse(KSeFModel):
     challenge: str
     timestamp: datetime
     timestamp_ms: int
-    client_ip: str | None = None
+    client_ip: str
 
 
 class AuthenticationKsefTokenRequest(KSeFModel):

@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from ksef.models.common import ContextIdentifier, KSeFModel
+from ksef.models.common import KSeFModel, OperationStatusInfo
 
 
 class KSeFTokenGenerateRequest(KSeFModel):
-    context_identifier: ContextIdentifier
     permissions: list[str]
     description: str
 
@@ -18,12 +17,16 @@ class KSeFTokenResponse(KSeFModel):
 
 class KSeFTokenInfo(KSeFModel):
     reference_number: str
-    description: str | None = None
-    status: str | None = None
-    permissions: list[str] = []
+    author_identifier: dict | None = None
+    context_identifier: dict | None = None
+    description: str = ""
+    requested_permissions: list[str] = []
     date_created: datetime | None = None
+    last_use_date: datetime | None = None
+    status: OperationStatusInfo | None = None
+    status_details: list[dict] | None = None
 
 
 class KSeFTokenListResponse(KSeFModel):
-    items: list[KSeFTokenInfo] = []
+    tokens: list[KSeFTokenInfo] = []
     continuation_token: str | None = None

@@ -169,7 +169,7 @@ def test_problem_details():
 
 def test_session_status_response():
     data = {
-        "status": {"code": "200", "description": "OK"},
+        "status": {"code": 200, "description": "OK"},
         "invoiceCount": 5,
         "successfulInvoiceCount": 4,
         "failedInvoiceCount": 1,

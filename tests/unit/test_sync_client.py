@@ -13,6 +13,7 @@ def test_sync_client_get_challenge():
             "challenge": "sync-challenge",
             "timestamp": "2026-04-06T10:00:00+00:00",
             "timestampMs": 1775386800000,
+            "clientIp": "127.0.0.1",
         })
     )
     with KSeFClient(environment=Environment.TEST) as client:

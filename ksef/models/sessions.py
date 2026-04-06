@@ -61,11 +61,11 @@ class SendInvoiceResponse(KSeFModel):
 
 
 class SessionStatusResponse(KSeFModel):
-    status: OperationStatusInfo | None = None
+    status: OperationStatusInfo
     upo: dict | None = None
     invoice_count: int | None = None
     successful_invoice_count: int | None = None
     failed_invoice_count: int | None = None
     valid_until: datetime | None = None
-    date_created: datetime | None = None
-    date_updated: datetime | None = None
+    date_created: datetime
+    date_updated: datetime

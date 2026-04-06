@@ -3,27 +3,31 @@ from __future__ import annotations
 from ksef.models.common import ContextIdentifier, KSeFModel, OperationStatusInfo
 
 
+class EntityPermission(KSeFModel):
+    type: str
+    can_delegate: bool = False
+
+
 class PersonPermissionGrantRequest(KSeFModel):
     subject_identifier: ContextIdentifier
     permissions: list[str]
-    subject_details: dict | None = None
+    description: str
+    subject_details: dict
 
 
 class EntityPermissionGrantRequest(KSeFModel):
     subject_identifier: ContextIdentifier
-    permissions: list[str]
-    can_delegate: bool = False
-    subject_details: dict | None = None
+    permissions: list[EntityPermission]
+    description: str
+    subject_details: dict
 
 
 class PermissionOperationStatusResponse(KSeFModel):
     status: OperationStatusInfo
-    reference_number: str | None = None
 
 
 class PermissionQueryRequest(KSeFModel):
-    page: int = 0
-    page_size: int = 10
+    pass
 
 
 class PermissionGrantResponse(KSeFModel):

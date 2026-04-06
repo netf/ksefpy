@@ -2,21 +2,35 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from ksef.models.common import KSeFModel
+from pydantic import Field
+
+from ksef.models.common import KSeFModel, OperationStatusInfo
+
+
+class CertificateLimitInfo(KSeFModel):
+    remaining: int
+    limit: int
 
 
 class CertificateLimitResponse(KSeFModel):
-    limit: int
-    active_count: int
-    can_enroll: bool
+    can_request: bool
+    enrollment: CertificateLimitInfo
+    certificate: CertificateLimitInfo
 
 
 class CertificateEnrollmentDataResponse(KSeFModel):
-    distinguished_name: dict
+    common_name: str
+    country_name: str
+    given_name: str | None = None
+    surname: str | None = None
+    serial_number: str | None = None
+    unique_identifier: str | None = None
+    organization_name: str | None = None
+    organization_identifier: str | None = None
 
 
 class CertificateEnrollRequest(KSeFModel):
-    name: str
+    certificate_name: str
     certificate_type: str
     csr: str
     valid_from: datetime | None = None
@@ -24,33 +38,40 @@ class CertificateEnrollRequest(KSeFModel):
 
 class CertificateEnrollResponse(KSeFModel):
     reference_number: str
+    timestamp: datetime
 
 
 class CertificateEnrollmentStatusResponse(KSeFModel):
-    status: str
+    status: OperationStatusInfo
     certificate_serial_number: str | None = None
+    request_date: datetime | None = None
 
 
 class CertificateRetrieveRequest(KSeFModel):
-    serial_numbers: list[str]
+    certificate_serial_numbers: list[str]
 
 
 class CertificateInfo(KSeFModel):
-    certificate: str
-    serial_number: str | None = None
+    certificate_serial_number: str | None = None
     name: str | None = None
-    certificate_type: str | None = None
-    status: str | None = None
+    type: str | None = Field(default=None, alias="type")
+    common_name: str | None = None
+    status: OperationStatusInfo | None = None
+    subject_identifier: dict | None = None
+    valid_from: datetime | None = None
+    valid_to: datetime | None = None
+    last_use_date: datetime | None = None
+    request_date: datetime | None = None
 
 
 class CertificateQueryRequest(KSeFModel):
     status: str | None = None
     name: str | None = None
-    certificate_type: str | None = None
-    page: int = 0
-    page_size: int = 10
+    type: str | None = Field(default=None, alias="type")
+    certificate_serial_number: str | None = None
+    expires_after: datetime | None = None
 
 
 class CertificateQueryResponse(KSeFModel):
-    items: list[CertificateInfo] = []
-    continuation_token: str | None = None
+    certificates: list[CertificateInfo] = []
+    has_more: bool = False

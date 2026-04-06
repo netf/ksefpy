@@ -20,7 +20,7 @@ def status_client():
 async def test_get_session_status(status_client: SessionStatusClient):
     respx.get(f"{BASE}/sessions/sess-1").mock(
         return_value=httpx.Response(200, json={
-            "status": {"code": "200", "description": "OK"},
+            "status": {"code": 200, "description": "OK"},
             "invoiceCount": 3,
             "successfulInvoiceCount": 2,
             "failedInvoiceCount": 1,

@@ -54,7 +54,7 @@ async def test_export(invoice_client: InvoiceClient):
 @pytest.mark.asyncio
 async def test_get_export_status(invoice_client: InvoiceClient):
     respx.get(f"{BASE}/invoices/exports/exp-1").mock(
-        return_value=httpx.Response(200, json={"status": {"code": "200"}})
+        return_value=httpx.Response(200, json={"status": {"code": 200}})
     )
     result = await invoice_client.get_export_status("exp-1", access_token="tok")
-    assert result["status"]["code"] == "200"
+    assert result["status"]["code"] == 200
