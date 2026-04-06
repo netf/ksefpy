@@ -233,13 +233,20 @@ class AsyncAuthCoordinator:
 
         challenge_resp = await self._client.auth.get_challenge()
 
+        # Build the AuthTokenRequest XML document
+        auth_xml = (
+            '<?xml version="1.0" encoding="UTF-8"?>'
+            '<AuthTokenRequest xmlns="http://ksef.mf.gov.pl/schema/auth">'
+            f"<Challenge>{challenge_resp.challenge}</Challenge>"
+            f"<Identifier><Type>nip</Type><Value>{nip}</Value></Identifier>"
+            "</AuthTokenRequest>"
+        )
+
         xades_service = XAdESService()
-        signed_xml = xades_service.sign_auth_request(
-            nip=nip,
-            challenge=challenge_resp.challenge,
-            timestamp=challenge_resp.timestamp.isoformat(),
-            certificate_pem=certificate,
-            private_key_pem=private_key,
+        signed_xml = xades_service.sign(
+            auth_xml,
+            certificate=certificate,
+            private_key=private_key,
         )
 
         signature_resp = await self._client.auth.submit_xades_signature(signed_xml)
