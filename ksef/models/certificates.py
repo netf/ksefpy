@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import Field
-
 from ksef.models.common import KSeFModel, OperationStatusInfo
 
 
@@ -54,7 +52,7 @@ class CertificateRetrieveRequest(KSeFModel):
 class CertificateInfo(KSeFModel):
     certificate_serial_number: str | None = None
     name: str | None = None
-    type: str | None = Field(default=None, alias="type")
+    type: str | None = None
     common_name: str | None = None
     status: OperationStatusInfo | None = None
     subject_identifier: dict | None = None
@@ -67,7 +65,7 @@ class CertificateInfo(KSeFModel):
 class CertificateQueryRequest(KSeFModel):
     status: str | None = None
     name: str | None = None
-    type: str | None = Field(default=None, alias="type")
+    type: str | None = None
     certificate_serial_number: str | None = None
     expires_after: datetime | None = None
 

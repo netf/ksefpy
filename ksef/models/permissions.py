@@ -26,9 +26,5 @@ class PermissionOperationStatusResponse(KSeFModel):
     status: OperationStatusInfo
 
 
-class PermissionQueryRequest(KSeFModel):
-    pass
-
-
 class PermissionGrantResponse(KSeFModel):
     reference_number: str

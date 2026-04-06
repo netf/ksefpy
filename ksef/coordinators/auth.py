@@ -54,6 +54,10 @@ class AuthSession:
         """Return the current access token, auto-refreshing if near expiry."""
         async with self._lock:
             if self._is_near_expiry(self._access_token_info):
+                if self._is_near_expiry(self._refresh_token_info):
+                    from ksef.exceptions import KSeFSessionError
+
+                    raise KSeFSessionError("Refresh token has expired; full re-authentication required")
                 refresh_resp = await self._client.auth.refresh_token(
                     refresh_token=self._refresh_token_info.token
                 )
