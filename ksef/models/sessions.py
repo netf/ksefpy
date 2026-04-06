@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import base64
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from pydantic import Field
 
 from ksef.models.common import KSeFModel, OperationStatusInfo
+
+if TYPE_CHECKING:
+    from ksef.crypto.service import SessionMaterials
 
 
 class FormCode(KSeFModel):
@@ -16,6 +21,14 @@ class FormCode(KSeFModel):
 class EncryptionInfo(KSeFModel):
     encrypted_symmetric_key: str
     initialization_vector: str
+
+    @classmethod
+    def from_session_materials(cls, materials: SessionMaterials) -> EncryptionInfo:
+        """Build from CryptographyService session materials."""
+        return cls(
+            encrypted_symmetric_key=base64.b64encode(materials.encrypted_key).decode(),
+            initialization_vector=base64.b64encode(materials.iv).decode(),
+        )
 
 
 class FileMetadata(KSeFModel):

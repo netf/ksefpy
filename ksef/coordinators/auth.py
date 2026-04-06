@@ -71,13 +71,16 @@ class AsyncAuthCoordinator:
     ) -> None:
         self._client = client
         self._crypto = crypto
+        self._crypto_warmed_up = False
 
     async def _get_or_create_crypto(self) -> CryptographyService:
         from ksef.crypto.service import CryptographyService
 
         if self._crypto is None:
             self._crypto = CryptographyService()
-        await self._warmup_crypto(self._crypto)
+        if not self._crypto_warmed_up:
+            await self._warmup_crypto(self._crypto)
+            self._crypto_warmed_up = True
         return self._crypto
 
     async def _warmup_crypto(self, crypto: CryptographyService) -> None:

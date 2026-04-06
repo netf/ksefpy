@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 import xml.etree.ElementTree as ET
+from functools import cache
 
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser as _XmlParser
@@ -24,6 +25,7 @@ _parser = _XmlParser(
 )
 
 
+@cache
 def _has_xsdata_metadata(cls: type) -> bool:
     """Return True if *cls* has at least one field with xsdata-style metadata."""
     if not dataclasses.is_dataclass(cls):

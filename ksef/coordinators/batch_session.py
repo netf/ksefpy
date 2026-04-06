@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import base64
 import io
 import zipfile
 from typing import TYPE_CHECKING
 
 from ksef.coordinators.online_session import _FORM_CODE_MAP
+from ksef.models.sessions import EncryptionInfo
 
 if TYPE_CHECKING:
     from ksef.client import AsyncKSeFClient
@@ -78,10 +80,6 @@ class AsyncBatchSessionManager:
 
         Returns the raw API response dict from the batch session endpoint.
         """
-        import base64
-
-        from ksef.models.sessions import EncryptionInfo
-
         form_code = _FORM_CODE_MAP.get(schema_version)
         if form_code is None:
             raise ValueError(
@@ -97,10 +95,7 @@ class AsyncBatchSessionManager:
         plain_meta = crypto.get_metadata(zip_bytes)
         enc_meta = crypto.get_metadata(encrypted_zip)
 
-        encryption_info = EncryptionInfo(
-            encrypted_symmetric_key=base64.b64encode(materials.encrypted_key).decode(),
-            initialization_vector=base64.b64encode(materials.iv).decode(),
-        )
+        encryption_info = EncryptionInfo.from_session_materials(materials)
 
         access_token = await self._auth_session.get_access_token()
 
@@ -115,4 +110,4 @@ class AsyncBatchSessionManager:
             "encryptedInvoicesContent": base64.b64encode(encrypted_zip).decode(),
         }
 
-        return await self._client.batch.upload(payload, access_token=access_token)
+        return await self._client.batch.open(payload, access_token=access_token)

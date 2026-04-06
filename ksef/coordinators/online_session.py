@@ -54,6 +54,10 @@ class OnlineSessionContext:
         offline_mode: bool = False,
     ) -> SendInvoiceResponse:
         """Encrypt XML bytes and send to KSeF as an invoice."""
+        if self._closed:
+            from ksef.exceptions import KSeFSessionError
+
+            raise KSeFSessionError("Cannot send invoice: session is already closed")
         plain_meta = self._crypto.get_metadata(xml_bytes)
         encrypted = self._crypto.encrypt_aes256(xml_bytes, self._materials.key, self._materials.iv)
         enc_meta = self._crypto.get_metadata(encrypted)
@@ -91,9 +95,9 @@ class OnlineSessionContext:
         """Close the online session (idempotent)."""
         if self._closed:
             return
-        self._closed = True
         access_token = await self._auth_session.get_access_token()
         await self._client.online.close(self._session_ref, access_token=access_token)
+        self._closed = True
 
     async def __aenter__(self) -> OnlineSessionContext:
         return self
@@ -141,10 +145,7 @@ class AsyncOnlineSessionManager:
 
         materials = crypto.generate_session_materials()
 
-        encryption_info = EncryptionInfo(
-            encrypted_symmetric_key=base64.b64encode(materials.encrypted_key).decode(),
-            initialization_vector=base64.b64encode(materials.iv).decode(),
-        )
+        encryption_info = EncryptionInfo.from_session_materials(materials)
 
         open_request = OpenOnlineSessionRequest(
             form_code=form_code,
