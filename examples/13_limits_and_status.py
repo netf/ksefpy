@@ -11,7 +11,7 @@ Run:
     uv run python examples/13_limits_and_status.py
 
 Requirements:
-    pip install ksef[xades]
+    pip install ksefpy[xades]
 """
 
 from __future__ import annotations

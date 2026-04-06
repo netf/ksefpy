@@ -7,7 +7,7 @@ Run:
     uv run python examples/03_send_invoice.py
 
 Requirements:
-    pip install ksef[xades]
+    pip install ksefpy[xades]
 """
 
 from __future__ import annotations

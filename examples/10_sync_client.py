@@ -8,7 +8,7 @@ Run:
     uv run python examples/10_sync_client.py
 
 Requirements:
-    pip install ksef[xades]
+    pip install ksefpy[xades]
 """
 
 from __future__ import annotations

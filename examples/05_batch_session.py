@@ -8,7 +8,7 @@ Run:
     uv run python examples/05_batch_session.py
 
 Requirements:
-    pip install ksef[xades]
+    pip install ksefpy[xades]
 """
 
 from __future__ import annotations
