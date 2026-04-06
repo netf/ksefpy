@@ -13,9 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync --dev
-      - run: uv run python -m ruff check ksef/ tests/ examples/
-      - run: uv run python -m ruff format --check ksef/ tests/ examples/
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: check ksef/ tests/ examples/
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: format --check ksef/ tests/ examples/
 
   typecheck:
     name: Type Check
@@ -24,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uv sync --dev
-      - run: uv run python -m pyright ksef/
+      - run: uvx pyright ksef/
 
   test:
     name: Unit Tests
