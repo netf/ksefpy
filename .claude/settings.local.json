@@ -29,7 +29,8 @@
       "Bash(git stash:*)",
       "Bash(wc -l examples/*.py examples/README.md)",
       "Bash(grep:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(git push:*)"
     ]
   }
 }

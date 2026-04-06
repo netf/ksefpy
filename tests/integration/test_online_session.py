@@ -73,16 +73,35 @@ async def test_download_sent_invoice(client: AsyncKSeF, nip: str):
         session_ref = s.reference_number
     invoice_ref = result.reference_number
 
-    # Poll until ksefNumber is assigned
+    # Poll until ksefNumber is assigned — try both per-invoice and session-level
     await client._ensure_auth()
     ksef_number = None
     for _ in range(30):
         await asyncio.sleep(3)
         token = await client._get_access_token()
-        inv = await client._client.session_status.get_invoice_status(
-            session_ref, invoice_ref, access_token=token,
-        )
-        ksef_number = inv.get("ksefNumber")
+
+        # Try per-invoice status first
+        try:
+            inv = await client._client.session_status.get_invoice_status(
+                session_ref, invoice_ref, access_token=token,
+            )
+            ksef_number = inv.get("ksefNumber")
+        except Exception:
+            pass
+
+        # Fallback: check session invoices list
+        if not ksef_number:
+            try:
+                resp = await client._client.session_status.get_session_invoices(
+                    session_ref, access_token=token,
+                )
+                for inv_item in resp.get("invoices", []):
+                    if inv_item.get("referenceNumber") == invoice_ref:
+                        ksef_number = inv_item.get("ksefNumber")
+                        break
+            except Exception:
+                pass
+
         if ksef_number:
             break
 

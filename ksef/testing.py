@@ -128,7 +128,7 @@ def generate_test_invoice_xml(nip: str) -> bytes:
     <KodWaluty>PLN</KodWaluty>
     <P_1>{today}</P_1>
     <P_1M>Warszawa</P_1M>
-    <P_2>TEST/{today.strftime("%Y")}/001</P_2>
+    <P_2>TEST/{now.strftime("%Y%m%d%H%M%S")}/{random.randint(100000, 999999)}</P_2>
     <OkresFa>
       <P_6_Od>{today}</P_6_Od>
       <P_6_Do>{today}</P_6_Do>
