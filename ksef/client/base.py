@@ -103,8 +103,11 @@ class BaseClient:
             error_code = exc_content.get("serviceCode")
             details = exc_content.get("exceptionDetailList", [])
 
+        message = f"API error {status}"
+        if not error_code and not details and response.text:
+            message = f"API error {status}: {response.text[:200]}"
         raise KSeFApiError(
-            message=f"API error {status}",
+            message=message,
             status_code=status,
             error_code=error_code,
             details=details,

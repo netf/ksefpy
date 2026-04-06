@@ -107,8 +107,21 @@ async def main() -> None:
         print(f"  Invoices found in metadata query: {count}")
 
         # Step 6: Download the invoice XML by its KSeF number.
+        # The server may need a few seconds after assigning the KSeF number
+        # before the invoice is available for download.
         print(f"\nDownloading invoice {ksef_number} ...")
-        xml_bytes = await dl.download(ksef_number)
+        from ksef.exceptions import KSeFApiError
+
+        xml_bytes = None
+        for attempt in range(5):
+            try:
+                xml_bytes = await dl.download(ksef_number)
+                break
+            except KSeFApiError:
+                print(f"  Not ready yet, retrying in 3s (attempt {attempt + 1}/5) ...")
+                await asyncio.sleep(3)
+
+        assert xml_bytes is not None, "Failed to download invoice after 5 attempts"
         print(f"  Downloaded {len(xml_bytes)} bytes of XML.")
         # Print a short snippet so we can see it's the right document.
         snippet = xml_bytes[:200].decode("utf-8", errors="replace")
