@@ -71,17 +71,26 @@ async def test_get_session_invoices(client: AsyncKSeFClient, auth_session: AuthS
 
 async def test_download_sent_invoice(client: AsyncKSeFClient, auth_session: AuthSession, online_session_data: dict):
     """Download the invoice we sent by its KSeF number."""
+    import asyncio
+
     token = await auth_session.get_access_token()
-    # Get session invoices to find the KSeF number
-    resp = await client.session_status.get_session_invoices(
-        online_session_data["session_ref"], access_token=token
-    )
-    invoices = resp.get("invoices", [])
-    if not invoices:
-        pytest.skip("No invoices found in session")
-    ksef_number = invoices[0].get("ksefNumber")
-    if not ksef_number:
-        pytest.skip("No ksefNumber in invoice metadata")
+
+    # Poll until the server assigns a ksefNumber (async processing after session close)
+    # TEST environment can be slow — allow up to 90s
+    ksef_number = None
+    for _ in range(30):
+        token = await auth_session.get_access_token()
+        resp = await client.session_status.get_session_invoices(
+            online_session_data["session_ref"], access_token=token
+        )
+        invoices = resp.get("invoices", [])
+        if invoices:
+            ksef_number = invoices[0].get("ksefNumber")
+            if ksef_number:
+                break
+        await asyncio.sleep(3)
+
+    assert ksef_number, "Server did not assign ksefNumber within 90s"
 
     xml_bytes = await client.invoices.download(ksef_number, access_token=token)
     assert isinstance(xml_bytes, bytes)

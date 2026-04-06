@@ -51,24 +51,43 @@ async def test_revoke_token(client: AsyncKSeFClient, auth_session: AuthSession, 
 
 
 async def test_authenticate_with_generated_token(
-    client: AsyncKSeFClient, auth_session: AuthSession, nip: str, generated_token: dict
+    client: AsyncKSeFClient, auth_session: AuthSession, nip: str
 ):
-    """Authenticate using a KSeF token (not certificate)."""
+    """Generate a fresh token and authenticate with it."""
     import asyncio
 
     from ksef.coordinators.auth import AsyncAuthCoordinator
 
-    token_value = generated_token["token"]
-    if not token_value:
-        pytest.skip("No token value available")
+    # Generate a dedicated token for this test (separate from the fixture's token)
+    access_tok = await auth_session.get_access_token()
+    resp = await client.tokens.generate(
+        {"permissions": ["InvoiceRead", "InvoiceWrite"], "description": "auth-flow-test-token"},
+        access_token=access_tok,
+    )
+    token_ref = resp.get("referenceNumber")
+    token_value = resp.get("token")
+    assert token_value, "Token generation did not return a token value"
 
-    # Need to wait for token to become active
-    await asyncio.sleep(3)
-
-    coordinator = AsyncAuthCoordinator(client)
     try:
-        session = await coordinator.authenticate_with_token(nip=nip, ksef_token=token_value, poll_timeout=30.0)
+        # Poll until token becomes Active
+        for _ in range(30):
+            access_tok = await auth_session.get_access_token()
+            status_resp = await client.tokens.get(token_ref, access_token=access_tok)
+            token_status = status_resp.get("status", {})
+            code = token_status.get("code") if isinstance(token_status, dict) else token_status
+            if str(code) == "200":
+                break
+            await asyncio.sleep(3)
+
+        coordinator = AsyncAuthCoordinator(client)
+        session = await coordinator.authenticate_with_token(nip=nip, ksef_token=token_value, poll_timeout=90.0)
         access = await session.get_access_token()
         assert access
-    except Exception:
-        pytest.skip("Token may not be active yet")
+        assert access != token_value
+    finally:
+        # Clean up: revoke the test token
+        try:
+            access_tok = await auth_session.get_access_token()
+            await client.tokens.revoke(token_ref, access_token=access_tok)
+        except Exception:
+            pass

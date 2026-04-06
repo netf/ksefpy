@@ -109,20 +109,30 @@ def generate_test_invoice_xml(nip: str) -> bytes:
   </Podmiot1>
   <Podmiot2>
     <DaneIdentyfikacyjne>
-      <NIP>9999999999</NIP>
-      <Nazwa>Odbiorca Testowy</Nazwa>
+      <NIP>1111111111</NIP>
+      <Nazwa>F.H.U. Jan Kowalski</Nazwa>
     </DaneIdentyfikacyjne>
     <Adres>
       <KodKraju>PL</KodKraju>
-      <AdresL1>ul. Odbiorcza 2</AdresL1>
-      <AdresL2>00-002 Warszawa</AdresL2>
+      <AdresL1>ul. Polna 1</AdresL1>
+      <AdresL2>00-001 Warszawa</AdresL2>
     </Adres>
+    <DaneKontaktowe>
+      <Email>jan@kowalski.pl</Email>
+    </DaneKontaktowe>
+    <NrKlienta>99999999</NrKlienta>
+    <JST>2</JST>
+    <GV>2</GV>
   </Podmiot2>
   <Fa>
     <KodWaluty>PLN</KodWaluty>
     <P_1>{today}</P_1>
+    <P_1M>Warszawa</P_1M>
     <P_2>TEST/{today.strftime("%Y")}/001</P_2>
-    <P_6>{today}</P_6>
+    <OkresFa>
+      <P_6_Od>{today}</P_6_Od>
+      <P_6_Do>{today}</P_6_Do>
+    </OkresFa>
     <P_13_1>1000.00</P_13_1>
     <P_14_1>230.00</P_14_1>
     <P_15>1230.00</P_15>
