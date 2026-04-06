@@ -115,3 +115,22 @@ async def test_delete_request(base_client: BaseClient):
     resp = await base_client.delete("tokens/ref-1", access_token="tok")
     assert resp is None
     assert route.called
+
+
+from ksef.client import AsyncKSeFClient
+
+@pytest.mark.asyncio
+async def test_aggregated_client_has_all_sub_clients():
+    async with AsyncKSeFClient(environment=Environment.TEST) as client:
+        assert hasattr(client, "auth")
+        assert hasattr(client, "sessions")
+        assert hasattr(client, "online")
+        assert hasattr(client, "batch")
+        assert hasattr(client, "session_status")
+        assert hasattr(client, "invoices")
+        assert hasattr(client, "permissions")
+        assert hasattr(client, "certificates")
+        assert hasattr(client, "tokens")
+        assert hasattr(client, "limits")
+        assert hasattr(client, "peppol")
+        assert hasattr(client, "testdata")
