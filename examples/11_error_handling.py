@@ -2,17 +2,14 @@
 
 The SDK raises typed exceptions for every failure mode:
 
-  KSeFApiError          — base class for all HTTP-level API errors
-  KSeFUnauthorizedError — HTTP 401 (bad token, wrong NIP, etc.)
-  KSeFForbiddenError    — HTTP 403 (insufficient permissions)
-  KSeFRateLimitError    — HTTP 429 (too many requests)
-  KSeFServerError       — HTTP 5xx
-  KSeFCryptoError       — local crypto failure (bad key, missing library, etc.)
-  KSeFSessionError      — session lifecycle errors (already closed, etc.)
-  KSeFTimeoutError      — polling timeout (auth, export, UPO)
-
-This example demonstrates how to catch each type and what information
-is available on each exception instance.
+  KSeFError            -- base class for all KSeF errors
+  KSeFAuthError        -- authentication failures (401)
+  KSeFInvoiceError     -- invoice validation errors (400/450)
+  KSeFPermissionError  -- permission denied (403)
+  KSeFRateLimitError   -- rate limited (429)
+  KSeFServerError      -- server errors (5xx)
+  KSeFSessionError     -- session lifecycle errors
+  KSeFTimeoutError     -- polling timeouts
 
 Run:
     uv run python examples/11_error_handling.py
@@ -25,144 +22,75 @@ from __future__ import annotations
 
 import asyncio
 
-from ksef import AsyncKSeFClient, Environment
-from ksef.coordinators.auth import AsyncAuthCoordinator
-from ksef.coordinators.online_session import AsyncOnlineSessionManager
+from ksef import AsyncKSeF
 from ksef.exceptions import (
-    KSeFApiError,
-    KSeFCryptoError,
+    KSeFAuthError,
+    KSeFError,
+    KSeFInvoiceError,
+    KSeFPermissionError,
     KSeFRateLimitError,
-    KSeFSessionError,
-    KSeFTimeoutError,
-    KSeFUnauthorizedError,
+    KSeFServerError,
 )
-from ksef.testing import generate_random_nip, generate_test_certificate, generate_test_invoice_xml
+from ksef.testing import generate_random_nip, generate_test_certificate
 
 # ---------------------------------------------------------------------------
-# Helper: authenticate legitimately (used in later examples)
+# Scenario 1: Invalid token
 # ---------------------------------------------------------------------------
 
-async def _authenticate(client: AsyncKSeFClient):
+async def demo_invalid_token() -> None:
+    print("--- Scenario 1: KSeFAuthError (invalid token) ---")
+    nip = generate_random_nip()
+    try:
+        async with AsyncKSeF(nip=nip, token="THIS-TOKEN-DOES-NOT-EXIST", env="test") as client:
+            await client.get_limits()  # triggers auth
+    except KSeFAuthError as exc:
+        print(f"  Caught KSeFAuthError: {exc}")
+    except KSeFError as exc:
+        # Fallback: some TEST responses return a different error code.
+        print(f"  Caught KSeFError: {exc}")
+    print()
+
+
+# ---------------------------------------------------------------------------
+# Scenario 2: Download non-existent invoice
+# ---------------------------------------------------------------------------
+
+async def demo_not_found() -> None:
+    print("--- Scenario 2: KSeFError (invoice not found) ---")
     nip = generate_random_nip()
     cert_pem, key_pem = generate_test_certificate(nip)
-    auth = AsyncAuthCoordinator(client)
-    session = await auth.authenticate_with_certificate(
-        nip=nip,
-        certificate=cert_pem,
-        private_key=key_pem,
-    )
-    return nip, session
-
-
-# ---------------------------------------------------------------------------
-# Scenario 1: Invalid token → KSeFUnauthorizedError
-# ---------------------------------------------------------------------------
-
-async def demo_unauthorized(client: AsyncKSeFClient) -> None:
-    print("--- Scenario 1: KSeFUnauthorizedError (invalid token) ---")
-    nip = generate_random_nip()
-    auth = AsyncAuthCoordinator(client)
     try:
-        await auth.authenticate_with_token(
-            nip=nip,
-            ksef_token="THIS-TOKEN-DOES-NOT-EXIST",
-            poll_timeout=10.0,  # fail fast in this demo
-        )
-    except KSeFUnauthorizedError as exc:
-        print(f"  Caught KSeFUnauthorizedError: {exc}")
-        print(f"  HTTP status code: {exc.status_code}")
-        print(f"  Problem details:  {exc.problem}")
-    except KSeFApiError as exc:
-        # Fallback: some TEST responses return a different error code.
-        print(f"  Caught KSeFApiError (status {exc.status_code}): {exc}")
-    except KSeFTimeoutError as exc:
-        print(f"  Caught KSeFTimeoutError: {exc}")
+        async with AsyncKSeF(nip=nip, cert=cert_pem, key=key_pem, env="test") as client:
+            await client.download_invoice("0000000000-20260101-000000-0000000000")
+    except KSeFError as exc:
+        print(f"  Caught KSeFError: {exc}")
+        print(f"  Raw response: {exc.raw_response}")
     print()
 
 
 # ---------------------------------------------------------------------------
-# Scenario 2: Use an expired/bogus access token → KSeFUnauthorizedError
+# Scenario 3: Demonstrate exception hierarchy
 # ---------------------------------------------------------------------------
 
-async def demo_bad_access_token(client: AsyncKSeFClient) -> None:
-    print("--- Scenario 2: KSeFApiError (forged access token) ---")
-    bogus_token = "eyJhbGciOiJSUzI1NiJ9.FAKE.SIGNATURE"
-    try:
-        await client.limits.get_context_limits(access_token=bogus_token)
-    except KSeFUnauthorizedError as exc:
-        print(f"  Caught KSeFUnauthorizedError: {exc}")
-    except KSeFApiError as exc:
-        print(f"  Caught KSeFApiError (status {exc.status_code}): {exc}")
+async def demo_exception_hierarchy() -> None:
+    print("--- Scenario 3: Exception hierarchy ---")
+    print(f"  KSeFAuthError is subclass of KSeFError: {issubclass(KSeFAuthError, KSeFError)}")
+    print(f"  KSeFInvoiceError is subclass of KSeFError: {issubclass(KSeFInvoiceError, KSeFError)}")
+    print(f"  KSeFPermissionError is subclass of KSeFError: {issubclass(KSeFPermissionError, KSeFError)}")
+    print(f"  KSeFRateLimitError is subclass of KSeFError: {issubclass(KSeFRateLimitError, KSeFError)}")
+    print(f"  KSeFServerError is subclass of KSeFError: {issubclass(KSeFServerError, KSeFError)}")
     print()
 
-
-# ---------------------------------------------------------------------------
-# Scenario 3: Double-close an online session → KSeFSessionError
-# ---------------------------------------------------------------------------
-
-async def demo_session_error(client: AsyncKSeFClient) -> None:
-    print("--- Scenario 3: KSeFSessionError (send after close) ---")
-    nip, session = await _authenticate(client)
-    invoice_xml = generate_test_invoice_xml(nip)
-    auth_coord = AsyncAuthCoordinator(client)
-    crypto = await auth_coord._get_or_create_crypto()
-    manager = AsyncOnlineSessionManager(client, session, crypto=crypto)
-    async with manager.open(schema_version="FA(3)") as online:
-        # Send once successfully.
-        await online.send_invoice_xml(invoice_xml)
-        # Manually close so the session is marked as closed.
-        await online.close()
-        # Now try to send again — should raise KSeFSessionError.
-        try:
-            await online.send_invoice_xml(invoice_xml)
-        except KSeFSessionError as exc:
-            print(f"  Caught KSeFSessionError: {exc}")
-    print()
-
-
-# ---------------------------------------------------------------------------
-# Scenario 4: Missing crypto dependency → KSeFCryptoError
-# ---------------------------------------------------------------------------
-
-async def demo_crypto_error() -> None:
-    print("--- Scenario 4: KSeFCryptoError (missing optional dependency) ---")
-    try:
-        # generate_qr_code_1 raises KSeFCryptoError if qrcode isn't installed.
-        import datetime as dt
-
-        from ksef.crypto.qr import generate_qr_code_1
-
-        nip = generate_random_nip()
-        generate_qr_code_1(
-            environment=Environment.TEST,
-            invoice_date=dt.date.today(),
-            seller_nip=nip,
-            file_sha256_b64url="AAAA",
-        )
-        print("  qrcode is installed — no error raised.")
-    except KSeFCryptoError as exc:
-        print(f"  Caught KSeFCryptoError: {exc}")
-    print()
-
-
-# ---------------------------------------------------------------------------
-# Scenario 5: Demonstrate KSeFRateLimitError attribute access pattern
-# ---------------------------------------------------------------------------
-
-async def demo_rate_limit_handling() -> None:
-    print("--- Scenario 5: KSeFRateLimitError attribute pattern ---")
-    # Simulate what you would do when catching a rate-limit error in production.
-    exc = KSeFRateLimitError(
-        message="Too many requests",
-        retry_after=30.0,
-        limit=100,
-        remaining=0,
-    )
-    print(f"  Message:     {exc}")
-    print(f"  retry_after: {exc.retry_after}s")
-    print(f"  limit:       {exc.limit}")
-    print(f"  remaining:   {exc.remaining}")
-    print(f"  status_code: {exc.status_code}")
+    # Show the pattern for handling rate limits
+    print("  Recommended error handling pattern:")
+    print("    try:")
+    print("        result = await client.send_invoice(xml)")
+    print("    except KSeFRateLimitError as exc:")
+    print("        await asyncio.sleep(exc.retry_after or 30)")
+    print("    except KSeFAuthError:")
+    print("        # re-authenticate")
+    print("    except KSeFError as exc:")
+    print("        logging.error(f'KSeF error: {exc}')")
     print()
 
 
@@ -171,13 +99,9 @@ async def demo_rate_limit_handling() -> None:
 # ---------------------------------------------------------------------------
 
 async def main() -> None:
-    async with AsyncKSeFClient(environment=Environment.TEST) as client:
-        await demo_unauthorized(client)
-        await demo_bad_access_token(client)
-        await demo_session_error(client)
-
-    await demo_crypto_error()
-    await demo_rate_limit_handling()
+    await demo_invalid_token()
+    await demo_not_found()
+    await demo_exception_hierarchy()
     print("All error handling scenarios demonstrated.")
 
 

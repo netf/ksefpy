@@ -1,14 +1,11 @@
-"""Query context limits, subject limits, rate limits, and active auth sessions.
+"""Query context limits, subject limits, rate limits, and session status.
 
 KSeF enforces several kinds of limits:
+  - Context limits  -- per-session limits (max invoices, max open sessions).
+  - Subject limits  -- per-NIP limits (max enrolled certificates).
+  - Rate limits     -- API throttling (requests per second/minute).
 
-  - Context limits  — per-authenticated-session limits (e.g. max invoices
-                      per online session, max open sessions at once).
-  - Subject limits  — per-NIP limits (e.g. max enrolled certificates).
-  - Rate limits     — API-level throttling limits (requests per second/minute).
-
-Additionally, you can list all active authentication sessions for your NIP
-and invalidate them individually or all at once.
+The get_limits() method fetches all three in parallel.
 
 Run:
     uv run python examples/13_limits_and_status.py
@@ -21,8 +18,7 @@ from __future__ import annotations
 
 import asyncio
 
-from ksef import AsyncKSeFClient, Environment
-from ksef.coordinators.auth import AsyncAuthCoordinator
+from ksef import AsyncKSeF
 from ksef.testing import generate_random_nip, generate_test_certificate
 
 
@@ -32,39 +28,19 @@ async def main() -> None:
     cert_pem, key_pem = generate_test_certificate(nip)
     print(f"Generated NIP: {nip}")
 
-    async with AsyncKSeFClient(environment=Environment.TEST) as client:
-        # Step 2: Authenticate.
-        print("\nAuthenticating ...")
-        auth = AsyncAuthCoordinator(client)
-        session = await auth.authenticate_with_certificate(
-            nip=nip,
-            certificate=cert_pem,
-            private_key=key_pem,
-        )
-        access_token = await session.get_access_token()
-        print("  Authentication successful.")
+    async with AsyncKSeF(nip=nip, cert=cert_pem, key=key_pem, env="test") as client:
+        # Step 2: Fetch all limits in one call.
+        print("\nFetching all limits ...")
+        limits = await client.get_limits()
+        print(f"  Context limits: {limits.context}")
+        print(f"  Subject limits: {limits.subject}")
+        print(f"  Rate limits:    {limits.rate}")
 
-        # Step 3: Fetch context limits — these reflect the current session's
-        # allowed operations (e.g. max invoices per online session).
-        print("\nFetching context limits ...")
-        ctx_limits = await client.limits.get_context_limits(access_token=access_token)
-        print(f"  Context limits: {ctx_limits}")
-
-        # Step 4: Fetch subject limits — NIP-level caps.
-        print("\nFetching subject limits ...")
-        sub_limits = await client.limits.get_subject_limits(access_token=access_token)
-        print(f"  Subject limits: {sub_limits}")
-
-        # Step 5: Fetch API rate limits — how many requests per time window
-        # you are allowed to make and how many remain.
-        print("\nFetching rate limits ...")
-        rate_limits = await client.limits.get_rate_limits(access_token=access_token)
-        print(f"  Rate limits: {rate_limits}")
-
-        # Step 6: List active authentication sessions for this NIP.
-        # Each entry represents an open auth session (access + refresh token pair).
+        # Step 3: List active auth sessions (low-level).
         print("\nListing active authentication sessions ...")
-        sessions_resp = await client.sessions.list_sessions(
+        await client._ensure_auth()
+        access_token = await client._get_access_token()
+        sessions_resp = await client._client.sessions.list_sessions(
             access_token=access_token,
             params={"pageSize": 10, "pageNumber": 0},
         )

@@ -1,30 +1,18 @@
-"""Integration tests for limits and rate-limits endpoints."""
+"""Integration tests for limits endpoints."""
+
 from __future__ import annotations
 
 import pytest
 
-from ksef import AsyncKSeFClient
-from ksef.coordinators.auth import AuthSession
+from ksef import AsyncKSeF
+from ksef.result import LimitsInfo
 
 pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")]
 
 
-async def test_get_context_limits(client: AsyncKSeFClient, auth_session: AuthSession):
-    token = await auth_session.get_access_token()
-    result = await client.limits.get_context_limits(access_token=token)
-    assert isinstance(result, dict)
-    assert "onlineSession" in result or "batchSession" in result
-
-
-async def test_get_subject_limits(client: AsyncKSeFClient, auth_session: AuthSession):
-    token = await auth_session.get_access_token()
-    result = await client.limits.get_subject_limits(access_token=token)
-    assert isinstance(result, dict)
-    assert "enrollment" in result or "certificate" in result
-
-
-async def test_get_rate_limits(client: AsyncKSeFClient, auth_session: AuthSession):
-    token = await auth_session.get_access_token()
-    result = await client.limits.get_rate_limits(access_token=token)
-    assert isinstance(result, dict)
-    assert "onlineSession" in result or "invoiceSend" in result
+async def test_get_limits(client: AsyncKSeF):
+    limits = await client.get_limits()
+    assert isinstance(limits, LimitsInfo)
+    assert isinstance(limits.context, dict)
+    assert isinstance(limits.subject, dict)
+    assert isinstance(limits.rate, dict)

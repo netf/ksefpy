@@ -7,8 +7,7 @@ import os
 import pytest
 import pytest_asyncio
 
-from ksef import AsyncKSeFClient, Environment
-from ksef.coordinators.auth import AsyncAuthCoordinator
+from ksef import AsyncKSeF
 from ksef.testing import generate_random_nip
 
 # All async tests and fixtures in this directory use a single session-scoped event loop
@@ -21,25 +20,14 @@ def nip() -> str:
 
 
 @pytest_asyncio.fixture(scope="session", loop_scope="session")
-async def client():
-    async with AsyncKSeFClient(environment=Environment.TEST) as c:
-        yield c
-
-
-@pytest_asyncio.fixture(scope="session", loop_scope="session")
-async def auth_session(client, nip):
-    coordinator = AsyncAuthCoordinator(client)
+async def client(nip):
     token = os.environ.get("KSEF_TEST_TOKEN")
     if token:
-        return await coordinator.authenticate_with_token(nip=nip, ksef_token=token)
-    from ksef.testing import generate_test_certificate
+        c = AsyncKSeF(nip=nip, token=token, env="test")
+    else:
+        from ksef.testing import generate_test_certificate
 
-    cert_pem, key_pem = generate_test_certificate(nip)
-    return await coordinator.authenticate_with_certificate(
-        nip=nip, certificate=cert_pem, private_key=key_pem,
-    )
-
-
-@pytest_asyncio.fixture(scope="session", loop_scope="session")
-async def access_token(auth_session):
-    return await auth_session.get_access_token()
+        cert_pem, key_pem = generate_test_certificate(nip)
+        c = AsyncKSeF(nip=nip, cert=cert_pem, key=key_pem, env="test")
+    async with c:
+        yield c

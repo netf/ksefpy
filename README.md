@@ -3,20 +3,11 @@
 Modern Python SDK for the Polish National e-Invoice System (KSeF) API 2.0.
 
 ```python
-from ksef import AsyncKSeFClient, Environment
-from ksef.coordinators.auth import AsyncAuthCoordinator
-from ksef.coordinators.online_session import AsyncOnlineSessionManager
+from ksef import KSeF
 
-async with AsyncKSeFClient(environment=Environment.TEST) as client:
-    # Authenticate
-    auth = AsyncAuthCoordinator(client)
-    session = await auth.authenticate_with_token(nip="1234567890", ksef_token="your-token")
-
-    # Send an invoice
-    manager = AsyncOnlineSessionManager(client, session)
-    async with manager.open(schema_version="FA(3)") as online:
-        result = await online.send_invoice_xml(invoice_xml_bytes)
-        print(result.reference_number)
+with KSeF(nip="1234567890", token="your-token", env="test") as client:
+    result = client.send_invoice(invoice_xml_bytes)
+    print(result.reference_number)
 ```
 
 ## Install
@@ -48,16 +39,10 @@ pip install ksef[all]
 ### KSeF Token
 
 ```python
-from ksef import AsyncKSeFClient, Environment
-from ksef.coordinators.auth import AsyncAuthCoordinator
+from ksef import KSeF
 
-async with AsyncKSeFClient(environment=Environment.PRODUCTION) as client:
-    auth = AsyncAuthCoordinator(client)
-    session = await auth.authenticate_with_token(
-        nip="1234567890",
-        ksef_token="your-ksef-token",
-    )
-    token = await session.get_access_token()
+with KSeF(nip="1234567890", token="your-ksef-token", env="production") as client:
+    result = client.send_invoice(xml_bytes)
 ```
 
 ### Certificate (XAdES)
@@ -65,100 +50,213 @@ async with AsyncKSeFClient(environment=Environment.PRODUCTION) as client:
 Requires `ksef[xades]`. The TEST environment accepts self-signed certificates.
 
 ```python
-session = await auth.authenticate_with_certificate(
-    nip="1234567890",
-    certificate_path="/path/to/cert.pem",
-    private_key_path="/path/to/key.pem",
-)
+from ksef import AsyncKSeF
+
+async with AsyncKSeF(nip="1234567890", cert=cert_pem, key=key_pem, env="test") as client:
+    result = await client.send_invoice(xml_bytes)
 ```
 
-### Token Auto-Refresh
+### Lazy Authentication
 
-`AuthSession` refreshes the access token automatically before expiry:
-
-```python
-token = await session.get_access_token()  # always returns a valid token
-```
+Authentication happens automatically on first API call. No separate auth step needed.
 
 ## Sending Invoices
 
-### Online Session (Interactive)
+### Single Invoice
 
 ```python
-from ksef.coordinators.online_session import AsyncOnlineSessionManager
+from ksef import AsyncKSeF
 
-manager = AsyncOnlineSessionManager(client, session)
-
-async with manager.open(schema_version="FA(3)") as online:
-    # From raw XML bytes
-    result = await online.send_invoice_xml(xml_bytes)
-
-    # From an xsdata model
-    result = await online.send_invoice(invoice_obj)
-
-    print(result.reference_number)
-# Session closes automatically
+async with AsyncKSeF(nip=nip, cert=cert_pem, key=key_pem, env="test") as client:
+    result = await client.send_invoice(xml_bytes)
+    print(result.reference_number)  # KSeF reference number
 ```
 
-### Batch Session
+### Multiple Invoices (One-Shot)
 
 ```python
-from ksef.coordinators.batch_session import AsyncBatchSessionManager
+results = await client.send_invoices([xml1, xml2, xml3])
+for r in results:
+    print(r.reference_number)
+```
 
-manager = AsyncBatchSessionManager(client, session)
-ctx = manager.new_context()
-ctx.add_invoice_xml(invoice1_bytes)
-ctx.add_invoice_xml(invoice2_bytes)
-resp = await manager.upload(ctx, schema_version="FA(3)")
+### Interactive Session
+
+For fine-grained control over a multi-invoice session:
+
+```python
+async with client.session() as s:
+    await s.send(xml1)
+    await s.send(xml2)
+print(s.results)           # list of InvoiceResult
+print(s.reference_number)  # session reference
 ```
 
 ## Downloading Invoices
 
 ```python
-from ksef.coordinators.invoice_download import AsyncInvoiceDownloadManager
-
-dl = AsyncInvoiceDownloadManager(client, session)
-
 # Query metadata
-metadata = await dl.query_metadata({
-    "subjectType": "subject1",
-    "dateRange": {"dateType": "invoicing", "from": "2026-01-01T00:00:00", "to": "2026-03-31T23:59:59"},
-})
+metadata = await client.query_invoices(
+    subjectType="subject1",
+    dateRange={"dateType": "invoicing", "from": "2026-01-01T00:00:00", "to": "2026-03-31T23:59:59"},
+)
 
 # Download by KSeF number
-xml_bytes = await dl.download("1234567890-20260101-ABC123-DE")
+xml_bytes = await client.download_invoice("1234567890-20260101-ABC123-DE")
+
+# Bulk export
+export_resp = await client.export_invoices(subjectType="subject1", dateRange={...})
 ```
 
-## Sync Client
-
-Every async operation has a sync equivalent:
+## Token Management
 
 ```python
-from ksef import KSeFClient, Environment
+# Create
+token_result = await client.create_token(
+    permissions={"permissions": ["InvoiceRead", "InvoiceWrite"]},
+    description="My API token",
+)
+print(token_result.token)
 
-with KSeFClient(environment=Environment.TEST) as client:
-    challenge = client.auth.get_challenge()
+# List
+tokens = await client.list_tokens()
+
+# Revoke
+await client.revoke_token(token_result.reference_number)
+```
+
+## Permissions
+
+```python
+# Query personal permissions
+permissions = await client.query_permissions(pageSize=10, pageNumber=0)
+
+# Check attachment (power of attorney) status
+attachment = await client.get_attachment_status()
+```
+
+## Certificates
+
+```python
+# Check certificate limits
+limits = await client.get_certificate_limits()
+
+# Get enrollment data (DN attributes for CSR)
+enrollment = await client.get_enrollment_data()
+```
+
+## Limits
+
+Fetch context, subject, and rate limits in one call (parallel under the hood):
+
+```python
+limits = await client.get_limits()
+print(limits.context)   # per-session limits
+print(limits.subject)   # per-NIP limits
+print(limits.rate)      # API throttling limits
+```
+
+## Session Status
+
+```python
+status = await client.get_session_status(reference_number)
+print(status.code)
+print(status.invoice_count)
+print(status.successful_count)
+```
+
+## QR Codes
+
+Generate verification QR codes for invoices:
+
+```python
+# URL only (no extra dependencies)
+url = client.qr_url(invoice_date, seller_nip, file_sha256_b64url)
+
+# QR image (requires ksef[qr])
+from ksef.crypto.qr import generate_qr_code_1
+image = generate_qr_code_1(Environment.PRODUCTION, invoice_date, seller_nip, file_hash)
+```
+
+## Sync vs Async
+
+Both `KSeF` (sync) and `AsyncKSeF` (async) share the same API:
+
+```python
+# Async
+from ksef import AsyncKSeF
+
+async with AsyncKSeF(nip=nip, token=token, env="test") as client:
+    result = await client.send_invoice(xml)
+
+# Sync
+from ksef import KSeF
+
+with KSeF(nip=nip, token=token, env="test") as client:
+    result = client.send_invoice(xml)
+```
+
+## Error Handling
+
+All errors inherit from `KSeFError`:
+
+```python
+from ksef.exceptions import (
+    KSeFError,            # base
+    KSeFAuthError,        # 401
+    KSeFInvoiceError,     # 400/450 on send
+    KSeFPermissionError,  # 403
+    KSeFRateLimitError,   # 429
+    KSeFServerError,      # 5xx
+    KSeFSessionError,     # session lifecycle
+    KSeFTimeoutError,     # polling timeout
+)
+
+try:
+    result = await client.send_invoice(xml)
+except KSeFRateLimitError as exc:
+    await asyncio.sleep(exc.retry_after or 30)
+except KSeFAuthError:
+    # re-authenticate
+    pass
+except KSeFError as exc:
+    print(exc.raw_response)  # raw API response dict
+```
+
+## Testing Helpers
+
+Generate valid test data for the TEST environment:
+
+```python
+from ksef.testing import generate_random_nip, generate_test_certificate, generate_test_invoice_xml
+
+nip = generate_random_nip()                        # valid 10-digit NIP
+cert_pem, key_pem = generate_test_certificate(nip)  # self-signed cert
+invoice_xml = generate_test_invoice_xml(nip)         # minimal FA(3) XML
 ```
 
 ## Low-Level Client
 
-Access any endpoint directly:
+For endpoints not exposed in the simplified API, access the internal client:
 
 ```python
-async with AsyncKSeFClient(environment=Environment.TEST) as client:
+async with AsyncKSeF(nip=nip, cert=cert_pem, key=key_pem, env="test") as client:
+    await client._ensure_auth()
+    token = await client._get_access_token()
+
     # All sub-clients available
-    client.auth          # challenge, token auth, xades auth, refresh
-    client.online        # open, send invoice, close
-    client.batch         # open, upload part, close
-    client.invoices      # download, query metadata, export
-    client.session_status  # session status, invoices, UPO
-    client.sessions      # list/invalidate active auth sessions
-    client.permissions   # grant, revoke, query
-    client.certificates  # limits, enroll, retrieve, revoke, query
-    client.tokens        # generate, list, get, revoke
-    client.limits        # context, subject, rate limits
-    client.peppol        # query providers
-    client.testdata      # create/remove test subjects and persons
+    client._client.auth
+    client._client.online
+    client._client.batch
+    client._client.invoices
+    client._client.session_status
+    client._client.sessions
+    client._client.permissions
+    client._client.certificates
+    client._client.tokens
+    client._client.limits
+    client._client.peppol
+    client._client.testdata
 ```
 
 ## Environments
@@ -171,39 +269,15 @@ Environment.DEMO        # https://api-demo.ksef.mf.gov.pl/v2
 Environment.PRODUCTION  # https://api.ksef.mf.gov.pl/v2
 ```
 
-## Cryptography
-
-AES-256-CBC encryption, RSA-OAEP key encryption, and XAdES signing are handled automatically by the coordinators. For advanced use:
-
-```python
-from ksef.crypto.service import CryptographyService
-
-crypto = CryptographyService()
-materials = crypto.generate_session_materials()  # AES key + IV + RSA-encrypted key
-encrypted = crypto.encrypt_aes256(plaintext, materials.key, materials.iv)
-```
-
-## QR Codes
-
-Generate verification QR codes for invoices. Requires `ksef[qr]`.
-
-```python
-from ksef.crypto.qr import build_qr_code_1_url, generate_qr_code_1
-
-# URL only
-url = build_qr_code_1_url(Environment.PRODUCTION, invoice_date, seller_nip, file_sha256_b64url)
-
-# QR image
-image = generate_qr_code_1(Environment.PRODUCTION, invoice_date, seller_nip, file_sha256_b64url)
-```
+Or use strings: `"test"`, `"demo"`, `"production"` (or `"prod"`).
 
 ## Testing
 
 ```sh
-# Unit tests (87 tests, runs by default)
+# Unit tests
 pytest
 
-# Integration tests against KSeF TEST API (29 tests, needs network)
+# Integration tests against KSeF TEST API (needs network)
 pytest tests/integration/ -m integration -v
 
 # With specific credentials
@@ -227,8 +301,8 @@ Integration tests generate a random NIP and self-signed certificate automaticall
 See [`examples/`](examples/) for 14 runnable scripts covering authentication, invoicing, batch sessions, token management, permissions, certificates, QR codes, error handling, and more. Every script runs against the TEST environment with zero setup:
 
 ```sh
-uv run python examples/02_authenticate_certificate.py
 uv run python examples/03_send_invoice.py
+uv run python examples/05_batch_session.py
 ```
 
 ## Requirements

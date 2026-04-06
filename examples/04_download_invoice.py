@@ -1,12 +1,9 @@
 """Send an invoice then download it back by KSeF number.
 
-Demonstrates the AsyncInvoiceDownloadManager for:
-  - Querying invoice metadata with a date/subject filter.
+Demonstrates:
+  - Sending an invoice to have something to download.
+  - Querying invoice metadata with a date filter.
   - Downloading raw invoice XML by its KSeF reference number.
-
-The example first sends an invoice (same flow as 03_send_invoice.py) to
-guarantee there is at least one invoice in the session. It then waits for
-the KSeF number to be assigned and downloads the XML.
 
 Run:
     uv run python examples/04_download_invoice.py
@@ -20,10 +17,8 @@ from __future__ import annotations
 import asyncio
 import datetime
 
-from ksef import AsyncKSeFClient, Environment
-from ksef.coordinators.auth import AsyncAuthCoordinator
-from ksef.coordinators.invoice_download import AsyncInvoiceDownloadManager
-from ksef.coordinators.online_session import AsyncOnlineSessionManager
+from ksef import AsyncKSeF
+from ksef.exceptions import KSeFError
 from ksef.testing import (
     generate_random_nip,
     generate_test_certificate,
@@ -34,27 +29,6 @@ _POLL_INTERVAL = 3.0
 _POLL_TIMEOUT = 90.0
 
 
-async def _wait_for_ksef_number(
-    client: AsyncKSeFClient,
-    session_ref: str,
-    invoice_ref: str,
-    access_token: str,
-) -> str:
-    """Poll invoice status until a KSeF number is assigned."""
-    deadline = asyncio.get_event_loop().time() + _POLL_TIMEOUT
-    while True:
-        inv_status = await client.session_status.get_invoice_status(
-            session_ref, invoice_ref, access_token=access_token
-        )
-        ksef_number = inv_status.get("ksefNumber")
-        if ksef_number:
-            return ksef_number
-        if asyncio.get_event_loop().time() >= deadline:
-            raise TimeoutError(f"KSeF number not assigned after {_POLL_TIMEOUT}s")
-        print("  Waiting for KSeF number ...")
-        await asyncio.sleep(_POLL_INTERVAL)
-
-
 async def main() -> None:
     # Step 1: Generate credentials and invoice XML.
     nip = generate_random_nip()
@@ -62,70 +36,49 @@ async def main() -> None:
     invoice_xml = generate_test_invoice_xml(nip)
     print(f"Generated NIP: {nip}")
 
-    async with AsyncKSeFClient(environment=Environment.TEST) as client:
-        # Step 2: Authenticate.
-        print("\nAuthenticating ...")
-        auth = AsyncAuthCoordinator(client)
-        session = await auth.authenticate_with_certificate(
-            nip=nip,
-            certificate=cert_pem,
-            private_key=key_pem,
-        )
-        print("  Authentication successful.")
-
-        # Step 3: Send an invoice to have something to download.
+    async with AsyncKSeF(nip=nip, cert=cert_pem, key=key_pem, env="test") as client:
+        # Step 2: Send an invoice.
         print("\nSending invoice ...")
-        crypto = await auth._get_or_create_crypto()
-        manager = AsyncOnlineSessionManager(client, session, crypto=crypto)
-        async with manager.open(schema_version="FA(3)") as online:
-            session_ref = online.reference_number
-            send_result = await online.send_invoice_xml(invoice_xml)
-            invoice_ref = send_result.reference_number
-            print(f"  Invoice reference: {invoice_ref}")
+        result = await client.send_invoice(invoice_xml)
+        print(f"  Invoice reference: {result.reference_number}")
 
-        # Step 4: Poll until the KSeF number is assigned.
-        print("\nWaiting for KSeF number to be assigned ...")
-        access_token = await session.get_access_token()
-        ksef_number = await _wait_for_ksef_number(client, session_ref, invoice_ref, access_token)
-        print(f"  KSeF number: {ksef_number}")
-
-        # Step 5: Query invoice metadata using the download manager.
+        # Step 3: Query invoice metadata.
         print("\nQuerying invoice metadata ...")
-        dl = AsyncInvoiceDownloadManager(client, session)
         today = datetime.date.today()
-        metadata = await dl.query_metadata(
-            {
-                "subjectType": "subject1",
-                "dateRange": {
-                    "dateType": "invoicing",
-                    "from": f"{today}T00:00:00",
-                    "to": f"{today}T23:59:59",
-                },
-            }
+        metadata = await client.query_invoices(
+            subjectType="subject1",
+            dateRange={
+                "dateType": "invoicing",
+                "from": f"{today}T00:00:00",
+                "to": f"{today}T23:59:59",
+            },
         )
         count = metadata.get("count") or metadata.get("total", 0)
-        print(f"  Invoices found in metadata query: {count}")
+        print(f"  Invoices found: {count}")
 
-        # Step 6: Download the invoice XML by its KSeF number.
-        # The server may need a few seconds after assigning the KSeF number
-        # before the invoice is available for download.
-        print(f"\nDownloading invoice {ksef_number} ...")
-        from ksef.exceptions import KSeFApiError
+        # Step 4: Download by KSeF number (once assigned).
+        # In a real app you would poll session_status to get the ksef_number.
+        # Here we show the download API with a retry loop.
+        invoices = metadata.get("invoices", [])
+        if invoices:
+            ksef_number = invoices[0].get("ksefNumber")
+            if ksef_number:
+                print(f"\nDownloading invoice {ksef_number} ...")
+                for attempt in range(5):
+                    try:
+                        xml_bytes = await client.download_invoice(ksef_number)
+                        print(f"  Downloaded {len(xml_bytes)} bytes of XML.")
+                        snippet = xml_bytes[:200].decode("utf-8", errors="replace")
+                        print(f"  XML snippet:\n    {snippet}")
+                        break
+                    except KSeFError:
+                        print(f"  Not ready yet, retrying ({attempt + 1}/5) ...")
+                        await asyncio.sleep(3)
+            else:
+                print("  KSeF number not yet assigned.")
+        else:
+            print("  No invoices found in metadata query.")
 
-        xml_bytes = None
-        for attempt in range(5):
-            try:
-                xml_bytes = await dl.download(ksef_number)
-                break
-            except KSeFApiError:
-                print(f"  Not ready yet, retrying in 3s (attempt {attempt + 1}/5) ...")
-                await asyncio.sleep(3)
-
-        assert xml_bytes is not None, "Failed to download invoice after 5 attempts"
-        print(f"  Downloaded {len(xml_bytes)} bytes of XML.")
-        # Print a short snippet so we can see it's the right document.
-        snippet = xml_bytes[:200].decode("utf-8", errors="replace")
-        print(f"  XML snippet:\n    {snippet}")
         print("\nDone!")
 
 
