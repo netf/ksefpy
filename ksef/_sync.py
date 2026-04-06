@@ -9,12 +9,14 @@ from typing import Any
 
 
 class SyncWrapper:
-    """Runs async methods of an AsyncKSeFClient on a private event loop in a daemon thread.
+    """Runs async methods on a private event loop in a daemon thread.
+
+    Used internally by the sync :class:`KSeF` wrapper.
 
     Usage::
 
-        wrapper = SyncWrapper(async_client)
-        result = wrapper.auth.get_challenge()
+        wrapper = SyncWrapper(async_ksef)
+        result = wrapper.send_invoice(xml)
         wrapper.close()
     """
 

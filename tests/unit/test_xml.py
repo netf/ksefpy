@@ -1,10 +1,4 @@
-from ksef.schemas import SchemaVersion
 from ksef.xml import deserialize_from_xml, serialize_to_xml
-
-
-def test_schema_version_enum():
-    assert SchemaVersion.FA_3.value == "FA(3)"
-    assert SchemaVersion.FA_2.value == "FA(2)"
 
 
 def test_serialize_to_xml_bytes():

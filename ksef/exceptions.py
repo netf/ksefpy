@@ -10,7 +10,7 @@ Public exceptions (raised to users of KSeF/AsyncKSeF):
     KSeFServerError      — 5xx
     KSeFTimeoutError     — polling timeouts
 
-Internal exceptions (raised by low-level clients, caught and mapped in easy.py):
+Internal exceptions (raised by low-level clients, caught and mapped in _client.py):
     _ApiError            — raw HTTP error from BaseClient
     KSeFCryptoError      — encryption/signing failures (stays internal)
     KSeFXmlError         — XML serialization/validation failures (stays internal)
@@ -104,7 +104,7 @@ class KSeFTimeoutError(KSeFError):
 class _ApiError(Exception):
     """Internal exception raised by BaseClient._handle_response.
 
-    Caught by easy.py and mapped to the appropriate public exception.
+    Caught by _client.py and mapped to the appropriate public exception.
     """
 
     def __init__(
