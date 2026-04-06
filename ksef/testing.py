@@ -89,10 +89,10 @@ def generate_test_invoice_xml(nip: str) -> bytes:
     now = datetime.datetime.now(datetime.UTC)
     today = datetime.date.today()
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
-<Faktura xmlns="http://crd.gov.pl/wzor/2025/01/09/13064/">
+<Faktura xmlns="http://crd.gov.pl/wzor/2025/06/25/13775/">
   <Naglowek>
     <KodFormularza kodSystemowy="FA (3)" wersjaSchemy="1-0E">FA</KodFormularza>
-    <WariantFormularza>2</WariantFormularza>
+    <WariantFormularza>3</WariantFormularza>
     <DataWytworzeniaFa>{now.strftime("%Y-%m-%dT%H:%M:%S")}</DataWytworzeniaFa>
     <SystemInfo>ksef-python-sdk-test</SystemInfo>
   </Naglowek>

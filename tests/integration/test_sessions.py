@@ -12,7 +12,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")
 async def test_list_sessions(client: AsyncKSeFClient, auth_session: AuthSession):
     token = await auth_session.get_access_token()
     resp = await client.session_status.list_sessions(
-        access_token=token, params={"pageSize": "10"}
+        access_token=token, params={"pageSize": "10", "sessionType": "online"}
     )
     assert isinstance(resp, dict)
 

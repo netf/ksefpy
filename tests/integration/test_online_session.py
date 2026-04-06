@@ -37,7 +37,6 @@ async def online_session_data(client: AsyncKSeFClient, auth_session: AuthSession
     return {"session_ref": session_ref, "invoice_ref": invoice_ref}
 
 
-@pytest.mark.xfail(reason="OpenOnlineSession request body format needs investigation")
 async def test_open_online_session(online_session_data: dict):
     assert online_session_data["session_ref"]
 

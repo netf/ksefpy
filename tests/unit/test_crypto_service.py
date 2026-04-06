@@ -36,7 +36,7 @@ def test_get_metadata():
     content = b"test invoice xml content"
     metadata = crypto.get_metadata(content)
     assert metadata.file_size == len(content)
-    assert len(metadata.hash_sha) == 64  # SHA-256 hex
+    assert len(metadata.hash_sha) == 44  # SHA-256 Base64
 
 
 def test_generate_session_materials():

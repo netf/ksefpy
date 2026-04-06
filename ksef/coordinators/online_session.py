@@ -21,11 +21,11 @@ if TYPE_CHECKING:
     from ksef.crypto.service import CryptographyService, SessionMaterials
 
 _FORM_CODE_MAP: dict[str, FormCode] = {
-    "FA(3)": FormCode(
-        system_code="FA (3)",
-        schema_version="FA_2025010901",
-        value="FA",
-    ),
+    "FA(2)": FormCode(system_code="FA (2)", schema_version="1-0E", value="FA"),
+    "FA(3)": FormCode(system_code="FA (3)", schema_version="1-0E", value="FA"),
+    "FA_RR": FormCode(system_code="FA_RR (1)", schema_version="1-1E", value="FA_RR"),
+    "PEF(3)": FormCode(system_code="PEF (3)", schema_version="2-1", value="PEF"),
+    "PEF_KOR(3)": FormCode(system_code="PEF_KOR (3)", schema_version="2-1", value="PEF"),
 }
 
 
@@ -46,6 +46,11 @@ class OnlineSessionContext:
         self._materials = session_materials
         self._session_ref = session_reference_number
         self._closed = False
+
+    @property
+    def reference_number(self) -> str:
+        """The session reference number."""
+        return self._session_ref
 
     async def send_invoice_xml(
         self,

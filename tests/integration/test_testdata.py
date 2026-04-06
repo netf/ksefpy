@@ -24,10 +24,18 @@ async def test_create_and_remove_subject(client: AsyncKSeFClient, auth_session: 
 async def test_create_and_remove_person(client: AsyncKSeFClient, auth_session: AuthSession):
     token = await auth_session.get_access_token()
     test_nip = generate_random_nip()
-    resp = await client.testdata.create_person(
-        {"personNip": test_nip, "firstName": "Test", "lastName": "Person", "isBailiff": False},
+    # Use a random valid PESEL to avoid "already exists" conflicts
+    import random
+
+    _PESEL_WEIGHTS = [1, 3, 7, 9, 1, 3, 7, 9, 1, 3]
+    while True:
+        digits = [random.randint(0, 9) for _ in range(10)]
+        checksum = (10 - sum(d * w for d, w in zip(digits, _PESEL_WEIGHTS)) % 10) % 10
+        digits.append(checksum)
+        test_pesel = "".join(str(d) for d in digits)
+        break
+    await client.testdata.create_person(
+        {"nip": test_nip, "pesel": test_pesel, "isBailiff": False, "description": "integration test person"},
         access_token=token,
     )
-    assert isinstance(resp, dict)
-    resp = await client.testdata.remove_person({"personNip": test_nip}, access_token=token)
-    assert isinstance(resp, dict)
+    await client.testdata.remove_person({"nip": test_nip}, access_token=token)

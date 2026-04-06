@@ -73,9 +73,12 @@ class CryptographyService:
     # ------------------------------------------------------------------
 
     def get_metadata(self, content: bytes) -> FileMetadata:
-        """Return SHA-256 hex digest and byte length of *content*."""
+        """Return Base64-encoded SHA-256 digest and byte length of *content*.
+
+        The KSeF API expects hashes in Base64 (not hex).
+        """
         return FileMetadata(
-            hash_sha=hashlib.sha256(content).hexdigest(),
+            hash_sha=base64.b64encode(hashlib.sha256(content).digest()).decode(),
             file_size=len(content),
         )
 
