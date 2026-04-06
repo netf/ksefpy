@@ -21,3 +21,4 @@ async def test_list_active_auth_sessions(client: AsyncKSeFClient, auth_session: 
     token = await auth_session.get_access_token()
     resp = await client.sessions.list_sessions(access_token=token)
     assert isinstance(resp, dict)
+    assert "items" in resp

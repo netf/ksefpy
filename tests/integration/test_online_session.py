@@ -56,3 +56,34 @@ async def test_get_session_status(client: AsyncKSeFClient, auth_session: AuthSes
     )
     assert isinstance(status, SessionStatusResponse)
     assert status.invoice_count is not None
+
+
+async def test_get_session_invoices(client: AsyncKSeFClient, auth_session: AuthSession, online_session_data: dict):
+    """GET /sessions/{ref}/invoices returns the sent invoice."""
+    token = await auth_session.get_access_token()
+    resp = await client.session_status.get_session_invoices(
+        online_session_data["session_ref"], access_token=token
+    )
+    assert isinstance(resp, dict)
+    invoices = resp.get("invoices", [])
+    assert len(invoices) >= 1
+
+
+async def test_download_sent_invoice(client: AsyncKSeFClient, auth_session: AuthSession, online_session_data: dict):
+    """Download the invoice we sent by its KSeF number."""
+    token = await auth_session.get_access_token()
+    # Get session invoices to find the KSeF number
+    resp = await client.session_status.get_session_invoices(
+        online_session_data["session_ref"], access_token=token
+    )
+    invoices = resp.get("invoices", [])
+    if not invoices:
+        pytest.skip("No invoices found in session")
+    ksef_number = invoices[0].get("ksefNumber")
+    if not ksef_number:
+        pytest.skip("No ksefNumber in invoice metadata")
+
+    xml_bytes = await client.invoices.download(ksef_number, access_token=token)
+    assert isinstance(xml_bytes, bytes)
+    assert len(xml_bytes) > 0
+    assert b"Faktura" in xml_bytes

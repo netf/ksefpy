@@ -27,6 +27,7 @@ async def test_query_metadata(client: AsyncKSeFClient, auth_session: AuthSession
         access_token=token,
     )
     assert isinstance(resp, dict)
+    assert "invoices" in resp
 
 
 async def test_download_invoice_not_found(client: AsyncKSeFClient, auth_session: AuthSession):

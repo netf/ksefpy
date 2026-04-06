@@ -13,9 +13,14 @@ from ksef.exceptions import KSeFCryptoError
 
 
 def _build_name(enrollment_info: dict[str, str]) -> Name:
-    """Build an X.509 Name from *enrollment_info* dict keys."""
+    """Build an X.509 Name from *enrollment_info* dict keys.
+
+    Accepts both snake_case keys (legacy) and the camelCase keys returned
+    directly by the KSeF ``/certificates/enrollments/data`` endpoint.
+    """
     attrs: list[NameAttribute] = []
     mapping = {
+        # snake_case (legacy)
         "common_name": NameOID.COMMON_NAME,
         "organization": NameOID.ORGANIZATION_NAME,
         "organizational_unit": NameOID.ORGANIZATIONAL_UNIT_NAME,
@@ -23,6 +28,18 @@ def _build_name(enrollment_info: dict[str, str]) -> Name:
         "state": NameOID.STATE_OR_PROVINCE_NAME,
         "locality": NameOID.LOCALITY_NAME,
         "email": NameOID.EMAIL_ADDRESS,
+        "serial_number": NameOID.SERIAL_NUMBER,
+        "given_name": NameOID.GIVEN_NAME,
+        "surname": NameOID.SURNAME,
+        # camelCase (API response keys)
+        "commonName": NameOID.COMMON_NAME,
+        "organizationName": NameOID.ORGANIZATION_NAME,
+        "organizationalUnitName": NameOID.ORGANIZATIONAL_UNIT_NAME,
+        "countryName": NameOID.COUNTRY_NAME,
+        "stateOrProvinceName": NameOID.STATE_OR_PROVINCE_NAME,
+        "localityName": NameOID.LOCALITY_NAME,
+        "serialNumber": NameOID.SERIAL_NUMBER,
+        "givenName": NameOID.GIVEN_NAME,
     }
     for key, oid in mapping.items():
         value = enrollment_info.get(key)

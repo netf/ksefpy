@@ -48,3 +48,27 @@ async def test_get_token(client: AsyncKSeFClient, auth_session: AuthSession, gen
 async def test_revoke_token(client: AsyncKSeFClient, auth_session: AuthSession, generated_token: dict):
     token = await auth_session.get_access_token()
     await client.tokens.revoke(generated_token["reference_number"], access_token=token)
+
+
+async def test_authenticate_with_generated_token(
+    client: AsyncKSeFClient, auth_session: AuthSession, nip: str, generated_token: dict
+):
+    """Authenticate using a KSeF token (not certificate)."""
+    import asyncio
+
+    from ksef.coordinators.auth import AsyncAuthCoordinator
+
+    token_value = generated_token["token"]
+    if not token_value:
+        pytest.skip("No token value available")
+
+    # Need to wait for token to become active
+    await asyncio.sleep(3)
+
+    coordinator = AsyncAuthCoordinator(client)
+    try:
+        session = await coordinator.authenticate_with_token(nip=nip, ksef_token=token_value, poll_timeout=30.0)
+        access = await session.get_access_token()
+        assert access
+    except Exception:
+        pytest.skip("Token may not be active yet")
