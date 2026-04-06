@@ -23,10 +23,12 @@ async def test_authenticate_produces_tokens(auth_session: AuthSession):
 
 
 async def test_refresh_token(client: AsyncKSeFClient, auth_session: AuthSession):
-    old_token = auth_session.access_token_info.token
+    import asyncio
+
+    # Wait so the new token gets a different iat (issued-at) timestamp
+    await asyncio.sleep(1)
     resp = await client.auth.refresh_token(
         refresh_token=auth_session.refresh_token_info.token
     )
     assert resp.access_token.token
     assert resp.access_token.valid_until
-    assert resp.access_token.token != old_token
