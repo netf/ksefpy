@@ -30,8 +30,8 @@ from ksef.testing import (
     generate_test_invoice_xml,
 )
 
-_POLL_INTERVAL = 2.0
-_POLL_TIMEOUT = 60.0
+_POLL_INTERVAL = 3.0
+_POLL_TIMEOUT = 90.0
 
 
 async def _wait_for_ksef_number(
@@ -40,13 +40,13 @@ async def _wait_for_ksef_number(
     invoice_ref: str,
     access_token: str,
 ) -> str:
-    """Poll invoice status until a KSeF reference number is assigned."""
+    """Poll invoice status until a KSeF number is assigned."""
     deadline = asyncio.get_event_loop().time() + _POLL_TIMEOUT
     while True:
         inv_status = await client.session_status.get_invoice_status(
             session_ref, invoice_ref, access_token=access_token
         )
-        ksef_number = inv_status.get("ksefReferenceNumber") or inv_status.get("ksef_reference_number")
+        ksef_number = inv_status.get("ksefNumber")
         if ksef_number:
             return ksef_number
         if asyncio.get_event_loop().time() >= deadline:

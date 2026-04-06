@@ -154,9 +154,15 @@ class BaseClient:
         response = await self._http.put(self._url(path), headers=h, content=content)
         return await self._handle_response(response)
 
-    async def get_raw(self, path: str, *, access_token: str | None = None) -> bytes:
+    async def get_raw(
+        self, path: str, *, access_token: str | None = None, headers: dict[str, str] | None = None
+    ) -> bytes:
         """GET that returns raw response bytes instead of parsed JSON."""
-        response = await self._http.get(self._url(path), headers=self._headers(access_token))
+        h = self._headers(access_token)
+        h["Accept"] = "*/*"  # raw endpoints may return XML, not JSON
+        if headers:
+            h.update(headers)
+        response = await self._http.get(self._url(path), headers=h)
         if response.status_code >= 400:
             await self._handle_response(response)
         return response.content
