@@ -54,7 +54,8 @@ async def main() -> None:
 
         # Step 3: Build a batch context and add multiple invoices.
         print(f"\nPreparing batch of {_INVOICE_COUNT} invoices ...")
-        manager = AsyncBatchSessionManager(client, session)
+        crypto = await auth._get_or_create_crypto()
+        manager = AsyncBatchSessionManager(client, session, crypto=crypto)
         ctx = manager.new_context()
 
         for i in range(_INVOICE_COUNT):

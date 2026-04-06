@@ -51,9 +51,10 @@ async def main() -> None:
         print("  Authentication successful.")
 
         # Step 3: Open an online session and send the invoice.
-        # AsyncOnlineSessionManager handles AES key generation, encryption, and
-        # session close automatically.
-        manager = AsyncOnlineSessionManager(client, session)
+        # The coordinator's crypto service must be warmed up (fetches Ministry's
+        # public encryption keys) before opening a session.
+        crypto = await auth._get_or_create_crypto()
+        manager = AsyncOnlineSessionManager(client, session, crypto=crypto)
         print("\nOpening online session ...")
         async with manager.open(schema_version="FA(3)") as online:
             session_ref = online.reference_number
@@ -74,7 +75,7 @@ async def main() -> None:
         status = await client.session_status.get_session_status(
             session_ref, access_token=access_token
         )
-        print(f"  Session status code:    {status.status_code}")
+        print(f"  Session status:         {status.status.code} ({status.status.description})")
         print(f"  Invoices sent:          {status.invoice_count}")
 
         # Step 6: Retrieve per-invoice status to get the KSeF number.

@@ -104,7 +104,9 @@ async def demo_session_error(client: AsyncKSeFClient) -> None:
     print("--- Scenario 3: KSeFSessionError (send after close) ---")
     nip, session = await _authenticate(client)
     invoice_xml = generate_test_invoice_xml(nip)
-    manager = AsyncOnlineSessionManager(client, session)
+    auth_coord = AsyncAuthCoordinator(client)
+    crypto = await auth_coord._get_or_create_crypto()
+    manager = AsyncOnlineSessionManager(client, session, crypto=crypto)
     async with manager.open(schema_version="FA(3)") as online:
         # Send once successfully.
         await online.send_invoice_xml(invoice_xml)

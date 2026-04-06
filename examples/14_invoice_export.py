@@ -35,7 +35,9 @@ from ksef.testing import generate_random_nip, generate_test_certificate, generat
 async def _send_invoice(client: AsyncKSeFClient, session, nip: str) -> None:
     """Send one invoice so the export has something to find."""
     invoice_xml = generate_test_invoice_xml(nip)
-    manager = AsyncOnlineSessionManager(client, session)
+    auth_coord = AsyncAuthCoordinator(client)
+    crypto = await auth_coord._get_or_create_crypto()
+    manager = AsyncOnlineSessionManager(client, session, crypto=crypto)
     async with manager.open(schema_version="FA(3)") as online:
         result = await online.send_invoice_xml(invoice_xml)
         print(f"  Invoice reference: {result.reference_number}")

@@ -75,7 +75,8 @@ async def main() -> None:
 
         # Step 3: Send an invoice to have something to download.
         print("\nSending invoice ...")
-        manager = AsyncOnlineSessionManager(client, session)
+        crypto = await auth._get_or_create_crypto()
+        manager = AsyncOnlineSessionManager(client, session, crypto=crypto)
         async with manager.open(schema_version="FA(3)") as online:
             session_ref = online.reference_number
             send_result = await online.send_invoice_xml(invoice_xml)
