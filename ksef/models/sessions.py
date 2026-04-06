@@ -1,0 +1,61 @@
+from __future__ import annotations
+from datetime import datetime
+from pydantic import Field
+from ksef.models.common import KSeFModel, OperationStatusInfo
+
+
+class FormCode(KSeFModel):
+    system_code: str
+    schema_version: str
+    value: str
+
+
+class EncryptionInfo(KSeFModel):
+    encrypted_symmetric_key: str
+    initialization_vector: str
+
+
+class EncryptionData(KSeFModel):
+    cipher_key: bytes
+    cipher_iv: bytes
+    encryption_info: EncryptionInfo
+
+
+class FileMetadata(KSeFModel):
+    hash_sha: str = Field(alias="hashSHA")
+    file_size: int
+
+
+class OpenOnlineSessionRequest(KSeFModel):
+    form_code: FormCode
+    encryption: EncryptionInfo
+
+
+class OpenOnlineSessionResponse(KSeFModel):
+    reference_number: str
+    valid_until: datetime
+
+
+class SendInvoiceRequest(KSeFModel):
+    invoice_hash: str
+    invoice_size: int
+    encrypted_invoice_hash: str
+    encrypted_invoice_size: int
+    encrypted_invoice_content: str
+    offline_mode: bool = False
+    hash_of_corrected_invoice: str | None = None
+
+
+class SendInvoiceResponse(KSeFModel):
+    reference_number: str
+
+
+class SessionStatusResponse(KSeFModel):
+    status: OperationStatusInfo | None = None
+    upo: dict | None = None
+    invoice_count: int | None = None
+    successful_invoice_count: int | None = None
+    failed_invoice_count: int | None = None
+    valid_until: datetime | None = None
+    date_created: datetime | None = None
+    date_updated: datetime | None = None
