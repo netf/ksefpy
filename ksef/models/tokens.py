@@ -8,11 +8,12 @@ from ksef.models.common import ContextIdentifier, KSeFModel
 class KSeFTokenGenerateRequest(KSeFModel):
     context_identifier: ContextIdentifier
     permissions: list[str]
-    description: str | None = None
+    description: str
 
 
 class KSeFTokenResponse(KSeFModel):
     reference_number: str
+    token: str
 
 
 class KSeFTokenInfo(KSeFModel):

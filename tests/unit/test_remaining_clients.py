@@ -42,7 +42,9 @@ async def test_batch_open(base: BaseClient):
 @respx.mock
 @pytest.mark.asyncio
 async def test_tokens_generate(base: BaseClient):
-    respx.post(f"{BASE}/tokens").mock(return_value=httpx.Response(200, json={"referenceNumber": "t-1"}))
+    respx.post(f"{BASE}/tokens").mock(
+        return_value=httpx.Response(202, json={"referenceNumber": "t-1", "token": "generated-tok"})
+    )
     client = KSeFTokenClient(base)
     result = await client.generate({"permissions": ["InvoiceWrite"]}, access_token="tok")
     assert result["referenceNumber"] == "t-1"
@@ -90,10 +92,12 @@ async def test_certificates_get_limits(base: BaseClient):
 @respx.mock
 @pytest.mark.asyncio
 async def test_peppol_query(base: BaseClient):
-    respx.post(f"{BASE}/peppol/query").mock(return_value=httpx.Response(200, json={"items": []}))
+    respx.get(f"{BASE}/peppol/query").mock(
+        return_value=httpx.Response(200, json={"peppolProviders": [], "hasMore": False})
+    )
     client = PeppolClient(base)
-    result = await client.query({}, access_token="tok")
-    assert result["items"] == []
+    result = await client.query(access_token="tok", params={"pageSize": 10})
+    assert result["peppolProviders"] == []
 
 
 @respx.mock

@@ -9,5 +9,6 @@ class PeppolClient:
     def __init__(self, base: BaseClient) -> None:
         self._base = base
 
-    async def query(self, request: dict[str, Any], *, access_token: str) -> dict:
-        return await self._base.post("peppol/query", access_token=access_token, json=request)
+    async def query(self, *, access_token: str, params: dict[str, Any] | None = None) -> dict:
+        """GET /peppol/query"""
+        return await self._base.get("peppol/query", access_token=access_token, params=params)

@@ -43,7 +43,7 @@ async def test_get_challenge(auth_client: AuthClient):
 @pytest.mark.asyncio
 async def test_submit_ksef_token(auth_client: AuthClient):
     respx.post(f"{BASE}/auth/ksef-token").mock(
-        return_value=httpx.Response(200, json={
+        return_value=httpx.Response(202, json={
             "referenceNumber": "ref-1",
             "authenticationToken": {"token": "temp-tok", "validUntil": "2026-04-06T11:00:00+00:00"},
         })
@@ -62,7 +62,7 @@ async def test_submit_ksef_token(auth_client: AuthClient):
 @pytest.mark.asyncio
 async def test_submit_xades_signature(auth_client: AuthClient):
     respx.post(f"{BASE}/auth/xades-signature").mock(
-        return_value=httpx.Response(200, json={
+        return_value=httpx.Response(202, json={
             "referenceNumber": "ref-2",
             "authenticationToken": {"token": "temp-tok-2", "validUntil": "2026-04-06T11:00:00+00:00"},
         })

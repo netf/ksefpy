@@ -50,3 +50,17 @@ class SessionStatusClient:
         return await self._base.get(
             f"sessions/{session_ref}/invoices/ksef/{ksef_number}/upo", access_token=access_token
         )
+
+    async def get_upo_by_invoice_reference(
+        self, session_ref: str, invoice_ref: str, *, access_token: str
+    ) -> dict:
+        """GET /sessions/{ref}/invoices/{invoiceRef}/upo"""
+        return await self._base.get(
+            f"sessions/{session_ref}/invoices/{invoice_ref}/upo", access_token=access_token
+        )
+
+    async def list_sessions(
+        self, *, access_token: str, params: dict[str, Any] | None = None
+    ) -> dict:
+        """GET /sessions — list/query sessions with filters."""
+        return await self._base.get("sessions", access_token=access_token, params=params)

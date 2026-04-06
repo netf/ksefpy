@@ -51,3 +51,23 @@ async def test_get_upo(status_client: SessionStatusClient):
     )
     result = await status_client.get_upo("sess-1", "upo-ref", access_token="tok")
     assert result == {"upo": "data"}
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_get_upo_by_invoice_reference(status_client: SessionStatusClient):
+    respx.get(f"{BASE}/sessions/sess-1/invoices/inv-ref/upo").mock(
+        return_value=httpx.Response(200, json={"upo": "invoice-upo"})
+    )
+    result = await status_client.get_upo_by_invoice_reference("sess-1", "inv-ref", access_token="tok")
+    assert result == {"upo": "invoice-upo"}
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_list_sessions(status_client: SessionStatusClient):
+    respx.get(f"{BASE}/sessions").mock(
+        return_value=httpx.Response(200, json={"items": [], "hasMore": False})
+    )
+    result = await status_client.list_sessions(access_token="tok", params={"pageSize": 10})
+    assert result["items"] == []

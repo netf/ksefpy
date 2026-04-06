@@ -44,7 +44,7 @@ async def test_open_online_session(online_client: OnlineSessionClient):
 @pytest.mark.asyncio
 async def test_send_invoice(online_client: OnlineSessionClient):
     respx.post(f"{BASE}/sessions/online/sess-1/invoices").mock(
-        return_value=httpx.Response(201, json={"referenceNumber": "inv-1"})
+        return_value=httpx.Response(202, json={"referenceNumber": "inv-1"})
     )
     req = SendInvoiceRequest(
         invoice_hash="hash1", invoice_size=100,
