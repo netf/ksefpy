@@ -8,6 +8,7 @@ from ksef.models.common import KSeFModel
 class ExceptionDetail(KSeFModel):
     exception_code: int
     exception_description: str
+    details: list[str] = []
 
 
 class ExceptionContent(KSeFModel):

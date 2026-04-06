@@ -24,7 +24,7 @@ class KSeFTokenInfo(KSeFModel):
     date_created: datetime | None = None
     last_use_date: datetime | None = None
     status: OperationStatusInfo | None = None
-    status_details: list[dict] | None = None
+    status_details: list[str] | None = None
 
 
 class KSeFTokenListResponse(KSeFModel):

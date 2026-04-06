@@ -44,7 +44,7 @@ class CertificateEnrollResponse(KSeFModel):
 class CertificateEnrollmentStatusResponse(KSeFModel):
     status: OperationStatusInfo
     certificate_serial_number: str | None = None
-    request_date: datetime | None = None
+    request_date: datetime
 
 
 class CertificateRetrieveRequest(KSeFModel):

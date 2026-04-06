@@ -2,13 +2,16 @@ from __future__ import annotations
 
 from datetime import datetime
 
+from pydantic import Field
+
 from ksef.models.common import KSeFModel, OperationStatusInfo
 
 
 class DateRange(KSeFModel):
     date_type: str
-    from_date: datetime = None
-    to_date: datetime = None
+    from_: datetime | None = Field(default=None, alias="from")
+    to: datetime | None = Field(default=None, alias="to")
+    restrict_to_permanent_storage_hwm_date: bool | None = None
 
 
 class InvoiceMetadataQuery(KSeFModel):
@@ -17,6 +20,14 @@ class InvoiceMetadataQuery(KSeFModel):
     ksef_number: str | None = None
     invoice_number: str | None = None
     seller_nip: str | None = None
+    buyer_identifier: dict | None = None
+    amount: dict | None = None
+    currency_codes: list[str] | None = None
+    invoicing_mode: str | None = None
+    is_self_invoicing: bool | None = None
+    form_type: str | None = None
+    invoice_types: list[str] | None = None
+    has_attachment: bool | None = None
 
 
 class InvoiceMetadata(KSeFModel):
@@ -45,8 +56,8 @@ class ExportFilters(KSeFModel):
 
 
 class ExportRequest(KSeFModel):
-    filters: ExportFilters | None = None
-    encryption: dict | None = None
+    filters: ExportFilters
+    encryption: dict
     only_metadata: bool = False
 
 
