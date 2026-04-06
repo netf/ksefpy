@@ -72,7 +72,7 @@ class AsyncInvoiceDownloadManager:
             status_block = status.get("status", {})
             if isinstance(status_block, dict):
                 code = status_block.get("code")
-            if str(code) == "200":
+            if code == 200:
                 return status
             if time.monotonic() >= deadline:
                 raise KSeFTimeoutError(

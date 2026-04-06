@@ -144,7 +144,7 @@ class AsyncAuthCoordinator:
                 status = status_data.get("status", {})
                 if isinstance(status, dict):
                     code = status.get("code")
-            if str(code) == "200":
+            if code == 200:
                 return
             if time.monotonic() >= deadline:
                 raise KSeFTimeoutError(

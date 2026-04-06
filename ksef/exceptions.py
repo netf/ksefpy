@@ -139,10 +139,3 @@ class KSeFXmlError(KSeFError):
         self.validation_errors = validation_errors or []
 
 
-# ---------------------------------------------------------------------------
-# Legacy aliases (kept for backward-compat with internal code that catches these)
-# ---------------------------------------------------------------------------
-
-KSeFApiError = _ApiError
-KSeFUnauthorizedError = _ApiError
-KSeFForbiddenError = _ApiError

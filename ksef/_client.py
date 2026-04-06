@@ -13,7 +13,10 @@ import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import date
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from ksef.crypto.service import CryptographyService
 
 from ksef._types import InvoiceResult, LimitsInfo, SessionStatus, TokenResult
 from ksef.client import AsyncKSeFClient
@@ -177,7 +180,7 @@ class AsyncKSeF:
 
         # Set after first authentication
         self._auth_session: AuthSession | None = None
-        self._crypto: Any = None  # CryptographyService
+        self._crypto: CryptographyService | None = None
 
     # ------------------------------------------------------------------
     # Context manager

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import io
 import zipfile
 from typing import TYPE_CHECKING
@@ -92,8 +93,6 @@ class AsyncBatchSessionManager:
 
         zip_bytes = context._build_zip()
         encrypted_zip = crypto.encrypt_aes256(zip_bytes, materials.key, materials.iv)
-
-        import hashlib
 
         file_hash = base64.b64encode(hashlib.sha256(zip_bytes).digest()).decode()
         part_hash = base64.b64encode(hashlib.sha256(encrypted_zip).digest()).decode()

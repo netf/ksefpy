@@ -87,7 +87,7 @@ def generate_test_invoice_xml(nip: str) -> bytes:
     Returns the invoice as UTF-8 encoded bytes.
     """
     now = datetime.datetime.now(datetime.UTC)
-    today = datetime.date.today()
+    today = now.date()
     xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Faktura xmlns="http://crd.gov.pl/wzor/2025/06/25/13775/">
   <Naglowek>
