@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from ksef.exceptions import KSeFCryptoError
 
@@ -83,7 +83,7 @@ def generate_qr_code_1(
     *,
     box_size: int = 10,
     border: int = 4,
-) -> object:
+) -> Any:
     """Generate a QR code image for a KSeF Type 1 verification URL.
 
     Requires the ``[qr]`` optional extra::
