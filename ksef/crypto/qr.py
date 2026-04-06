@@ -125,7 +125,7 @@ def generate_qr_code_1(
 
     qr = qrcode.QRCode(
         version=None,
-        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        error_correction=qrcode.ERROR_CORRECT_M,
         box_size=box_size,
         border=border,
     )
