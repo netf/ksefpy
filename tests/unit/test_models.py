@@ -88,7 +88,7 @@ def test_refresh_token_response():
 
 
 def test_form_code():
-    fc = FormCode(system_code="FA (3)", schema_version="FA_2025010901", value="FA")
+    fc = FormCode(system_code="FA (3)", schema_version="1-0E", value="FA")
     dumped = fc.model_dump(by_alias=True)
     assert dumped["systemCode"] == "FA (3)"
 
@@ -101,7 +101,7 @@ def test_encryption_info():
 
 def test_open_online_session_request():
     req = OpenOnlineSessionRequest(
-        form_code=FormCode(system_code="FA (3)", schema_version="FA_2025010901", value="FA"),
+        form_code=FormCode(system_code="FA (3)", schema_version="1-0E", value="FA"),
         encryption=EncryptionInfo(encrypted_symmetric_key="key", initialization_vector="iv"),
     )
     dumped = req.model_dump(by_alias=True)

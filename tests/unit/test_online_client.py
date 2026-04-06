@@ -32,7 +32,7 @@ async def test_open_online_session(online_client: OnlineSessionClient):
         })
     )
     req = OpenOnlineSessionRequest(
-        form_code=FormCode(system_code="FA (3)", schema_version="FA_2025010901", value="FA"),
+        form_code=FormCode(system_code="FA (3)", schema_version="1-0E", value="FA"),
         encryption=EncryptionInfo(encrypted_symmetric_key="key", initialization_vector="iv"),
     )
     result = await online_client.open(req, access_token="tok")

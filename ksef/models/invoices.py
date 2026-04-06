@@ -10,7 +10,7 @@ from ksef.models.common import KSeFModel, OperationStatusInfo
 class DateRange(KSeFModel):
     date_type: str
     from_: datetime | None = Field(default=None, alias="from")
-    to: datetime | None = Field(default=None, alias="to")
+    to: datetime | None = None
     restrict_to_permanent_storage_hwm_date: bool | None = None
 
 

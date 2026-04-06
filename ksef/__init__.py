@@ -59,6 +59,13 @@ class KSeF:
     def close(self) -> None:
         self._wrapper.close()
 
+    def session(self, schema: str = "FA(3)") -> None:  # noqa: ARG002
+        """Not available in sync mode — use ``AsyncKSeF.session()`` instead."""
+        raise NotImplementedError(
+            "session() context manager requires async. Use AsyncKSeF instead, "
+            "or use send_invoices() for batch sending in sync mode."
+        )
+
     def __getattr__(self, name: str) -> Any:
         return getattr(self._wrapper, name)
 
