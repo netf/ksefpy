@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from ksef.models.common import KSeFModel
 
 

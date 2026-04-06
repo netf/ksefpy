@@ -44,10 +44,10 @@ class AuthSession:
         """Return True if token expires within refresh_buffer seconds."""
         import datetime
 
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = datetime.datetime.now(datetime.UTC)
         valid_until = token.valid_until
         if valid_until.tzinfo is None:
-            valid_until = valid_until.replace(tzinfo=datetime.timezone.utc)
+            valid_until = valid_until.replace(tzinfo=datetime.UTC)
         remaining = (valid_until - now).total_seconds()
         return remaining <= self._refresh_buffer
 

@@ -1,4 +1,3 @@
-import pytest
 from ksef.coordinators.batch_session import BatchSessionContext
 
 
@@ -10,8 +9,8 @@ def test_batch_context_builds_zip():
     zip_bytes = ctx._build_zip()
     assert len(zip_bytes) > 0
 
-    import zipfile
     import io
+    import zipfile
 
     with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
         names = zf.namelist()

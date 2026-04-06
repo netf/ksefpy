@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import base64
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, AsyncGenerator
+from typing import TYPE_CHECKING
 
 from ksef.models.sessions import (
     EncryptionInfo,
@@ -52,7 +53,6 @@ class OnlineSessionContext:
         offline_mode: bool = False,
     ) -> SendInvoiceResponse:
         """Encrypt XML bytes and send to KSeF as an invoice."""
-        from ksef.crypto.service import FileMetadata
 
         # Compute metadata of original (plaintext) invoice
         plain_meta = self._crypto.get_metadata(xml_bytes)

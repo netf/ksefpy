@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 
 from ksef.models.auth import (
     AuthenticationChallengeResponse,
@@ -9,8 +8,8 @@ from ksef.models.auth import (
     TokenInfo,
 )
 from ksef.models.common import ContextIdentifier, ContextIdentifierType
+from ksef.models.errors import ApiErrorResponse, ProblemDetails
 from ksef.models.sessions import (
-    EncryptionData,
     EncryptionInfo,
     FileMetadata,
     FormCode,
@@ -20,7 +19,6 @@ from ksef.models.sessions import (
     SendInvoiceResponse,
     SessionStatusResponse,
 )
-from ksef.models.errors import ApiErrorResponse, ProblemDetails
 
 
 def test_challenge_response_roundtrip():

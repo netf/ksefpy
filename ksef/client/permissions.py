@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from typing import Any
+
 from ksef.client.base import BaseClient
 
 
@@ -23,7 +25,9 @@ class PermissionClient:
         return await self._base.post("permissions/subunits/grants", access_token=access_token, json=request)
 
     async def grant_eu_entity(self, request: dict[str, Any], *, access_token: str) -> dict:
-        return await self._base.post("permissions/eu-entities/administration/grants", access_token=access_token, json=request)
+        return await self._base.post(
+            "permissions/eu-entities/administration/grants", access_token=access_token, json=request
+        )
 
     async def grant_eu_representative(self, request: dict[str, Any], *, access_token: str) -> dict:
         return await self._base.post("permissions/eu-entities/grants", access_token=access_token, json=request)
@@ -56,7 +60,9 @@ class PermissionClient:
         return await self._base.get("permissions/query/entities/roles", access_token=access_token)
 
     async def query_subordinate_roles(self, request: dict[str, Any], *, access_token: str) -> dict:
-        return await self._base.post("permissions/query/subordinate-entities/roles", access_token=access_token, json=request)
+        return await self._base.post(
+            "permissions/query/subordinate-entities/roles", access_token=access_token, json=request
+        )
 
     async def get_operation_status(self, reference_number: str, *, access_token: str) -> dict:
         return await self._base.get(f"permissions/operations/{reference_number}", access_token=access_token)

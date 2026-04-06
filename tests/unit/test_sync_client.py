@@ -1,8 +1,7 @@
 import httpx
-import pytest
 import respx
 
-from ksef import KSeFClient, AsyncKSeFClient, Environment
+from ksef import Environment, KSeFClient
 
 BASE = "https://api-test.ksef.mf.gov.pl/v2"
 

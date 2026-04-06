@@ -6,7 +6,7 @@ import base64
 
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, rsa
-from cryptography.x509 import CertificateSigningRequestBuilder, NameAttribute, Name
+from cryptography.x509 import CertificateSigningRequestBuilder, Name, NameAttribute
 from cryptography.x509.oid import NameOID
 
 from ksef.exceptions import KSeFCryptoError

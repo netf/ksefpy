@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 def build_qr_code_1_url(
-    environment: "Environment",
+    environment: Environment,
     invoice_date: date,
     seller_nip: str,
     file_sha256_b64url: str,
@@ -44,7 +44,7 @@ def build_qr_code_1_url(
 
 
 def build_qr_code_2_url(
-    environment: "Environment",
+    environment: Environment,
     invoice_date: date,
     seller_nip: str,
     file_sha256_b64url: str,
@@ -76,14 +76,14 @@ def build_qr_code_2_url(
 
 
 def generate_qr_code_1(
-    environment: "Environment",
+    environment: Environment,
     invoice_date: date,
     seller_nip: str,
     file_sha256_b64url: str,
     *,
     box_size: int = 10,
     border: int = 4,
-) -> "object":
+) -> object:
     """Generate a QR code image for a KSeF Type 1 verification URL.
 
     Requires the ``[qr]`` optional extra::

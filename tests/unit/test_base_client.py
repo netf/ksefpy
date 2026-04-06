@@ -2,6 +2,7 @@ import httpx
 import pytest
 import respx
 
+from ksef.client import AsyncKSeFClient
 from ksef.client.base import BaseClient
 from ksef.environments import Environment
 from ksef.exceptions import (
@@ -33,7 +34,7 @@ async def test_get_request(base_client: BaseClient):
 @respx.mock
 @pytest.mark.asyncio
 async def test_post_request(base_client: BaseClient):
-    route = respx.post("https://api-test.ksef.mf.gov.pl/v2/auth/challenge").mock(
+    respx.post("https://api-test.ksef.mf.gov.pl/v2/auth/challenge").mock(
         return_value=httpx.Response(200, json={"challenge": "xyz"})
     )
     resp = await base_client.post("auth/challenge")
@@ -116,8 +117,6 @@ async def test_delete_request(base_client: BaseClient):
     assert resp is None
     assert route.called
 
-
-from ksef.client import AsyncKSeFClient
 
 @pytest.mark.asyncio
 async def test_aggregated_client_has_all_sub_clients():

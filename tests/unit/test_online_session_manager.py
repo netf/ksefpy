@@ -40,9 +40,10 @@ async def test_online_session_send_invoice():
         session = _make_session(client)
 
         import datetime
-        from cryptography.hazmat.primitives.asymmetric import rsa
-        from cryptography.hazmat.primitives import hashes
+
         from cryptography import x509
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import rsa
         from cryptography.x509.oid import NameOID
 
         private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -53,8 +54,8 @@ async def test_online_session_send_invoice():
             .issuer_name(subject)
             .public_key(private_key.public_key())
             .serial_number(x509.random_serial_number())
-            .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
-            .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1))
+            .not_valid_before(datetime.datetime.now(datetime.UTC))
+            .not_valid_after(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1))
             .sign(private_key, hashes.SHA256())
         )
 

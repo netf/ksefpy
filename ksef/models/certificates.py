@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from datetime import datetime
+
 from ksef.models.common import KSeFModel
 
 

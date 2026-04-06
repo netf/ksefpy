@@ -1,5 +1,5 @@
 from datetime import date
-import pytest
+
 from ksef.crypto.qr import build_qr_code_1_url
 from ksef.environments import Environment
 

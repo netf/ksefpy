@@ -1,6 +1,5 @@
-import pytest
-from ksef.xml import serialize_to_xml, deserialize_from_xml
 from ksef.schemas import SchemaVersion
+from ksef.xml import deserialize_from_xml, serialize_to_xml
 
 
 def test_schema_version_enum():

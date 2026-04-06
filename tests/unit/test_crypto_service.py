@@ -1,8 +1,6 @@
 import base64
 import os
 
-import pytest
-
 from ksef.crypto.service import CryptographyService
 
 
@@ -43,11 +41,12 @@ def test_get_metadata():
 
 def test_generate_session_materials():
     crypto = CryptographyService()
-    from cryptography.hazmat.primitives.asymmetric import rsa
-    from cryptography.hazmat.primitives import hashes
-    from cryptography import x509
-    from cryptography.x509.oid import NameOID
     import datetime
+
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.x509.oid import NameOID
 
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "test")])
@@ -57,8 +56,8 @@ def test_generate_session_materials():
         .issuer_name(subject)
         .public_key(private_key.public_key())
         .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
-        .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1))
+        .not_valid_before(datetime.datetime.now(datetime.UTC))
+        .not_valid_after(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1))
         .sign(private_key, hashes.SHA256())
     )
 
@@ -83,11 +82,13 @@ def test_generate_session_materials():
 
 def test_encrypt_ksef_token():
     crypto = CryptographyService()
-    from cryptography.hazmat.primitives.asymmetric import rsa, padding as asym_padding
-    from cryptography.hazmat.primitives import hashes
-    from cryptography import x509
-    from cryptography.x509.oid import NameOID
     import datetime
+
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
+    from cryptography.hazmat.primitives.asymmetric import rsa
+    from cryptography.x509.oid import NameOID
 
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "test")])
@@ -97,8 +98,8 @@ def test_encrypt_ksef_token():
         .issuer_name(subject)
         .public_key(private_key.public_key())
         .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
-        .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1))
+        .not_valid_before(datetime.datetime.now(datetime.UTC))
+        .not_valid_after(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1))
         .sign(private_key, hashes.SHA256())
     )
 

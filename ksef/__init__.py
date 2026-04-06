@@ -1,7 +1,9 @@
+from __future__ import annotations
+
+from ksef._sync import SyncWrapper
 from ksef._version import __version__
 from ksef.client import AsyncKSeFClient
 from ksef.environments import Environment
-from ksef._sync import SyncWrapper
 
 
 class KSeFClient:

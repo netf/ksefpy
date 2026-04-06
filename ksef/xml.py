@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import dataclasses
 import xml.etree.ElementTree as ET
-from typing import TypeVar
 
 from xsdata.formats.dataclass.context import XmlContext
 from xsdata.formats.dataclass.parsers import XmlParser as _XmlParser
@@ -13,8 +12,6 @@ from xsdata.formats.dataclass.serializers import XmlSerializer
 from xsdata.formats.dataclass.serializers.config import SerializerConfig
 
 from ksef.exceptions import KSeFXmlError
-
-T = TypeVar("T")
 
 _context = XmlContext()
 _serializer = XmlSerializer(
@@ -30,7 +27,7 @@ def _has_xsdata_metadata(cls: type) -> bool:
     return any("type" in f.metadata for f in dataclasses.fields(cls))  # type: ignore[arg-type]
 
 
-def _et_deserialize(xml_bytes: bytes, target_class: type[T]) -> T:
+def _et_deserialize[T](xml_bytes: bytes, target_class: type[T]) -> T:
     """Deserialize *xml_bytes* into *target_class* using stdlib ElementTree.
 
     This handles plain dataclasses that lack xsdata ``field(metadata=...)``
@@ -77,7 +74,7 @@ def serialize_to_xml(obj: object) -> bytes:
         raise KSeFXmlError(f"XML serialization failed: {exc}") from exc
 
 
-def deserialize_from_xml(xml_bytes: bytes, target_class: type[T]) -> T:
+def deserialize_from_xml[T](xml_bytes: bytes, target_class: type[T]) -> T:
     """Deserialize XML bytes into an instance of *target_class*.
 
     For xsdata-generated classes (with ``field(metadata={...})`` annotations)

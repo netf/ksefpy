@@ -49,11 +49,12 @@ def _mock_redeem():
 
 
 def _mock_public_keys():
-    import datetime
     import base64
-    from cryptography.hazmat.primitives.asymmetric import rsa
-    from cryptography.hazmat.primitives import hashes, serialization
+    import datetime
+
     from cryptography import x509
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
     from cryptography.x509.oid import NameOID
 
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -64,15 +65,20 @@ def _mock_public_keys():
         .issuer_name(subject)
         .public_key(private_key.public_key())
         .serial_number(x509.random_serial_number())
-        .not_valid_before(datetime.datetime.now(datetime.timezone.utc))
-        .not_valid_after(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=1))
+        .not_valid_before(datetime.datetime.now(datetime.UTC))
+        .not_valid_after(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=1))
         .sign(private_key, hashes.SHA256())
     )
     cert_b64 = base64.b64encode(cert.public_bytes(serialization.Encoding.DER)).decode()
 
     return respx.get(f"{BASE}/security/public-key-certificates").mock(
         return_value=httpx.Response(200, json=[
-            {"certificate": cert_b64, "validFrom": "2026-01-01T00:00:00Z", "validTo": "2027-01-01T00:00:00Z", "usage": ["KSEF_TOKEN_ENCRYPTION", "SYMMETRIC_KEY_ENCRYPTION"]},
+            {
+                "certificate": cert_b64,
+                "validFrom": "2026-01-01T00:00:00Z",
+                "validTo": "2027-01-01T00:00:00Z",
+                "usage": ["KSEF_TOKEN_ENCRYPTION", "SYMMETRIC_KEY_ENCRYPTION"],
+            },
         ])
     )
 
