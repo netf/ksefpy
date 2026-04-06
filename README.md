@@ -214,13 +214,22 @@ Integration tests generate a random NIP and self-signed certificate automaticall
 
 ## Supported Schema Versions
 
-| Key | System Code | Schema Version |
-|-----|-------------|----------------|
-| `FA(2)` | FA (2) | 1-0E |
-| `FA(3)` | FA (3) | 1-0E |
-| `FA_RR` | FA_RR (1) | 1-1E |
-| `PEF(3)` | PEF (3) | 2-1 |
-| `PEF_KOR(3)` | PEF_KOR (3) | 2-1 |
+| Key          | System Code | Schema Version |
+| ------------ | ----------- | -------------- |
+| `FA(2)`      | FA (2)      | 1-0E           |
+| `FA(3)`      | FA (3)      | 1-0E           |
+| `FA_RR`      | FA_RR (1)   | 1-1E           |
+| `PEF(3)`     | PEF (3)     | 2-1            |
+| `PEF_KOR(3)` | PEF_KOR (3) | 2-1            |
+
+## Examples
+
+See [`examples/`](examples/) for 14 runnable scripts covering authentication, invoicing, batch sessions, token management, permissions, certificates, QR codes, error handling, and more. Every script runs against the TEST environment with zero setup:
+
+```sh
+uv run python examples/02_authenticate_certificate.py
+uv run python examples/03_send_invoice.py
+```
 
 ## Requirements
 
