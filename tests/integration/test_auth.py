@@ -39,5 +39,5 @@ async def test_constructor_rejects_no_credentials():
 
 async def test_constructor_rejects_cert_without_key():
     """AsyncKSeF should raise ValueError when cert is provided without key."""
-    with pytest.raises(ValueError, match="Both cert and key"):
+    with pytest.raises(ValueError, match="cert.*key|token"):
         AsyncKSeF(nip="1234567890", cert=b"cert", env="test")

@@ -14,7 +14,7 @@ pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")
 @pytest_asyncio.fixture(scope="module", loop_scope="session")
 async def generated_token(client: AsyncKSeF):
     result = await client.create_token(
-        permissions={"permissions": ["InvoiceRead"]},
+        permissions=["InvoiceRead"],
         description="integration-test-token",
     )
     yield result
@@ -38,7 +38,7 @@ async def test_list_tokens(client: AsyncKSeF, generated_token: TokenResult):
 async def test_revoke_token(client: AsyncKSeF):
     """Create a token and immediately revoke it."""
     result = await client.create_token(
-        permissions={"permissions": ["InvoiceRead"]},
+        permissions=["InvoiceRead"],
         description="revoke-test-token",
     )
     await client.revoke_token(result.reference_number)

@@ -328,7 +328,7 @@ class AsyncKSeF:
     # Token management
     # ------------------------------------------------------------------
 
-    async def create_token(self, permissions: dict[str, Any], description: str = "") -> TokenResult:
+    async def create_token(self, permissions: list[str], description: str = "") -> TokenResult:
         """Create a new KSeF API token.
 
         Returns a :class:`TokenResult` with the reference number and token value.
