@@ -42,8 +42,8 @@ def _mock_auth_status_complete():
 def _mock_redeem():
     return respx.post(f"{BASE}/auth/token/redeem").mock(
         return_value=httpx.Response(200, json={
-            "accessToken": {"token": "access-jwt-123", "validUntil": "2026-04-06T10:15:00+00:00"},
-            "refreshToken": {"token": "refresh-jwt-456", "validUntil": "2026-04-13T10:00:00+00:00"},
+            "accessToken": {"token": "access-jwt-123", "validUntil": "2099-01-01T00:00:00+00:00"},
+            "refreshToken": {"token": "refresh-jwt-456", "validUntil": "2099-01-07T00:00:00+00:00"},
         })
     )
 
