@@ -38,9 +38,7 @@ async def test_post_request(base_client: BaseClient):
 @respx.mock
 @pytest.mark.asyncio
 async def test_auth_header_included(base_client: BaseClient):
-    route = respx.get("https://api-test.ksef.mf.gov.pl/v2/some/path").mock(
-        return_value=httpx.Response(200, json={})
-    )
+    route = respx.get("https://api-test.ksef.mf.gov.pl/v2/some/path").mock(return_value=httpx.Response(200, json={}))
     await base_client.get("some/path", access_token="my-jwt")
     assert route.calls[0].request.headers["Authorization"] == "Bearer my-jwt"
 
@@ -96,9 +94,7 @@ async def test_429_raises_api_error_with_retry_after(base_client: BaseClient):
 @respx.mock
 @pytest.mark.asyncio
 async def test_500_raises_api_error(base_client: BaseClient):
-    respx.get("https://api-test.ksef.mf.gov.pl/v2/down").mock(
-        return_value=httpx.Response(502, text="Bad Gateway")
-    )
+    respx.get("https://api-test.ksef.mf.gov.pl/v2/down").mock(return_value=httpx.Response(502, text="Bad Gateway"))
     with pytest.raises(_ApiError) as exc_info:
         await base_client.get("down")
     assert exc_info.value.status_code == 502
@@ -107,9 +103,7 @@ async def test_500_raises_api_error(base_client: BaseClient):
 @respx.mock
 @pytest.mark.asyncio
 async def test_delete_request(base_client: BaseClient):
-    route = respx.delete("https://api-test.ksef.mf.gov.pl/v2/tokens/ref-1").mock(
-        return_value=httpx.Response(204)
-    )
+    route = respx.delete("https://api-test.ksef.mf.gov.pl/v2/tokens/ref-1").mock(return_value=httpx.Response(204))
     resp = await base_client.delete("tokens/ref-1", access_token="tok")
     assert resp is None
     assert route.called

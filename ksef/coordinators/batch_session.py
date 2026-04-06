@@ -83,10 +83,7 @@ class AsyncBatchSessionManager:
         """
         form_code = _FORM_CODE_MAP.get(schema_version)
         if form_code is None:
-            raise ValueError(
-                f"Unknown schema_version {schema_version!r}. "
-                f"Supported: {list(_FORM_CODE_MAP)}"
-            )
+            raise ValueError(f"Unknown schema_version {schema_version!r}. Supported: {list(_FORM_CODE_MAP)}")
 
         crypto = self._get_crypto()
         materials = crypto.generate_session_materials()

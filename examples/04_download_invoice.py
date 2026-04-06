@@ -50,7 +50,9 @@ async def main() -> None:
             await client._ensure_auth()
             token = await client._get_access_token()
             inv_status = await client._client.session_status.get_invoice_status(
-                session_ref, result.reference_number, access_token=token,
+                session_ref,
+                result.reference_number,
+                access_token=token,
             )
             ksef_number = inv_status.get("ksefNumber")
             if ksef_number:

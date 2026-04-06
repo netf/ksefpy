@@ -46,7 +46,12 @@ class KSeF:
         timeout: float = 30.0,
     ) -> None:
         self._async = AsyncKSeF(
-            nip, token=token, cert=cert, key=key, env=env, timeout=timeout,
+            nip,
+            token=token,
+            cert=cert,
+            key=key,
+            env=env,
+            timeout=timeout,
         )
         self._wrapper = SyncWrapper(self._async)
 

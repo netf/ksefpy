@@ -9,6 +9,7 @@ def test_serialize_to_xml_bytes():
         class Meta:
             name = "SimpleDoc"
             namespace = "http://test.example.com"
+
         value: str = ""
 
     doc = SimpleDoc(value="hello")
@@ -25,6 +26,7 @@ def test_deserialize_from_xml():
         class Meta:
             name = "SimpleDoc"
             namespace = "http://test.example.com"
+
         value: str = ""
 
     xml = b'<?xml version="1.0" encoding="UTF-8"?><SimpleDoc xmlns="http://test.example.com"><value>world</value></SimpleDoc>'

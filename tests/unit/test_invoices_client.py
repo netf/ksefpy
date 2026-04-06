@@ -40,9 +40,7 @@ async def test_query_metadata(invoice_client: InvoiceClient):
 @respx.mock
 @pytest.mark.asyncio
 async def test_export(invoice_client: InvoiceClient):
-    respx.post(f"{BASE}/invoices/exports").mock(
-        return_value=httpx.Response(200, json={"referenceNumber": "exp-1"})
-    )
+    respx.post(f"{BASE}/invoices/exports").mock(return_value=httpx.Response(200, json={"referenceNumber": "exp-1"}))
     result = await invoice_client.export(
         {"dateFrom": "2026-01-01", "dateTo": "2026-03-31"},
         access_token="tok",
@@ -53,8 +51,6 @@ async def test_export(invoice_client: InvoiceClient):
 @respx.mock
 @pytest.mark.asyncio
 async def test_get_export_status(invoice_client: InvoiceClient):
-    respx.get(f"{BASE}/invoices/exports/exp-1").mock(
-        return_value=httpx.Response(200, json={"status": {"code": 200}})
-    )
+    respx.get(f"{BASE}/invoices/exports/exp-1").mock(return_value=httpx.Response(200, json={"status": {"code": 200}}))
     result = await invoice_client.get_export_status("exp-1", access_token="tok")
     assert result["status"]["code"] == 200

@@ -37,6 +37,7 @@ from ksef.exceptions import (
 # Error mapping: _ApiError -> public exceptions
 # ---------------------------------------------------------------------------
 
+
 def _map_api_error(exc: _ApiError) -> KSeFError:
     """Convert an internal ``_ApiError`` to the appropriate public exception."""
     status = exc.status_code
@@ -77,8 +78,7 @@ def _resolve_env(env: str | Environment) -> Environment:
     key = env.lower().strip()
     if key not in _ENV_MAP:
         raise ValueError(
-            f"Unknown environment {env!r}. "
-            f"Use one of: {', '.join(sorted(_ENV_MAP))} or pass an Environment object."
+            f"Unknown environment {env!r}. Use one of: {', '.join(sorted(_ENV_MAP))} or pass an Environment object."
         )
     return _ENV_MAP[key]
 
@@ -86,6 +86,7 @@ def _resolve_env(env: str | Environment) -> Environment:
 # ---------------------------------------------------------------------------
 # AsyncSessionContext — multi-send wrapper
 # ---------------------------------------------------------------------------
+
 
 class AsyncSessionContext:
     """Context manager for multi-invoice session operations.
@@ -123,6 +124,7 @@ class AsyncSessionContext:
 # ---------------------------------------------------------------------------
 # AsyncKSeF — the main high-level class
 # ---------------------------------------------------------------------------
+
 
 class AsyncKSeF:
     """High-level async KSeF client.
@@ -254,7 +256,9 @@ class AsyncKSeF:
         assert self._auth_session is not None
         try:
             mgr = AsyncOnlineSessionManager(
-                self._client, self._auth_session, crypto=self._crypto,
+                self._client,
+                self._auth_session,
+                crypto=self._crypto,
             )
             async with mgr.open(schema) as ctx:
                 resp = await ctx.send_invoice_xml(xml, offline_mode=offline)
@@ -276,7 +280,9 @@ class AsyncKSeF:
         results: list[InvoiceResult] = []
         try:
             mgr = AsyncOnlineSessionManager(
-                self._client, self._auth_session, crypto=self._crypto,
+                self._client,
+                self._auth_session,
+                crypto=self._crypto,
             )
             async with mgr.open(schema) as ctx:
                 for xml in xmls:
@@ -300,7 +306,9 @@ class AsyncKSeF:
         await self._ensure_auth()
         assert self._auth_session is not None
         mgr = AsyncOnlineSessionManager(
-            self._client, self._auth_session, crypto=self._crypto,
+            self._client,
+            self._auth_session,
+            crypto=self._crypto,
         )
         try:
             async with mgr.open(schema) as online_ctx:
@@ -402,7 +410,8 @@ class AsyncKSeF:
         access_token = await self._get_access_token()
         try:
             return await self._client.permissions.query_personal(
-                filters or {}, access_token=access_token,
+                filters or {},
+                access_token=access_token,
             )
         except _ApiError as exc:
             raise _map_api_error(exc) from exc
@@ -471,7 +480,8 @@ class AsyncKSeF:
         access_token = await self._get_access_token()
         try:
             resp = await self._client.session_status.get_session_status(
-                reference, access_token=access_token,
+                reference,
+                access_token=access_token,
             )
         except _ApiError as exc:
             raise _map_api_error(exc) from exc

@@ -38,10 +38,7 @@ class KSeFError(Exception):
         base = super().__str__()
         if self.raw_response:
             # Redact sensitive fields to prevent token leakage in logs
-            safe = {
-                k: ("***REDACTED***" if k in self._REDACTED_KEYS else v)
-                for k, v in self.raw_response.items()
-            }
+            safe = {k: ("***REDACTED***" if k in self._REDACTED_KEYS else v) for k, v in self.raw_response.items()}
             return f"{base} (raw_response={safe!r})"
         return base
 
@@ -144,5 +141,3 @@ class KSeFXmlError(KSeFError):
     ) -> None:
         super().__init__(message, raw_response=raw_response)
         self.validation_errors = validation_errors or []
-
-

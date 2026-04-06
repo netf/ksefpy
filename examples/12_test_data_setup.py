@@ -69,13 +69,15 @@ async def main() -> None:
         # Step 3: Clean up.
         print(f"\nRemoving test person (NIP: {person_nip}) ...")
         await client._client.testdata.remove_person(
-            {"nip": person_nip}, access_token=access_token,
+            {"nip": person_nip},
+            access_token=access_token,
         )
         print("  Person removed.")
 
         print(f"\nRemoving test subject (NIP: {subject_nip}) ...")
         await client._client.testdata.remove_subject(
-            {"subjectNip": subject_nip}, access_token=access_token,
+            {"subjectNip": subject_nip},
+            access_token=access_token,
         )
         print("  Subject removed.")
 

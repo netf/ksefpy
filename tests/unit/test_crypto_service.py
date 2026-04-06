@@ -69,6 +69,7 @@ def test_generate_session_materials():
     assert len(materials.encrypted_key) > 0
 
     from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
+
     decrypted_key = private_key.decrypt(
         materials.encrypted_key,
         asym_padding.OAEP(

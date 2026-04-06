@@ -25,7 +25,8 @@ async def test_create_and_remove_subject(client: AsyncKSeF):
         access_token=access_token,
     )
     await client._client.testdata.remove_subject(
-        {"subjectNip": test_nip}, access_token=access_token,
+        {"subjectNip": test_nip},
+        access_token=access_token,
     )
 
 
@@ -53,5 +54,6 @@ async def test_create_and_remove_person(client: AsyncKSeF):
         access_token=access_token,
     )
     await client._client.testdata.remove_person(
-        {"nip": test_nip}, access_token=access_token,
+        {"nip": test_nip},
+        access_token=access_token,
     )

@@ -81,9 +81,7 @@ async def test_permissions_grant_person(base: BaseClient):
 @respx.mock
 @pytest.mark.asyncio
 async def test_certificates_get_limits(base: BaseClient):
-    respx.get(f"{BASE}/certificates/limits").mock(
-        return_value=httpx.Response(200, json={"limit": 6, "activeCount": 2})
-    )
+    respx.get(f"{BASE}/certificates/limits").mock(return_value=httpx.Response(200, json={"limit": 6, "activeCount": 2}))
     client = CertificateClient(base)
     result = await client.get_limits(access_token="tok")
     assert result["limit"] == 6

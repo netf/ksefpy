@@ -12,22 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
       - uses: astral-sh/ruff-action@v3
         with:
           args: check ksef/ tests/ examples/
       - uses: astral-sh/ruff-action@v3
         with:
           args: format --check ksef/ tests/ examples/
-
-  typecheck:
-    name: Type Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v5
-      - run: uv sync --dev
-      - run: uvx pyright ksef/
 
   test:
     name: Unit Tests

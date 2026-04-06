@@ -26,6 +26,7 @@ class ApiErrorResponse(KSeFModel):
 
 class ProblemDetails(BaseModel):
     """RFC 7807 Problem Details."""
+
     model_config = ConfigDict(populate_by_name=True)
     type: str | None = None
     title: str | None = None

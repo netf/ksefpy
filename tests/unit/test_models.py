@@ -1,4 +1,3 @@
-
 from ksef.models.auth import (
     AuthenticationChallengeResponse,
     AuthenticationKsefTokenRequest,
@@ -150,9 +149,7 @@ def test_api_error_response():
             "serviceName": "validation",
             "timestamp": "2026-04-06T10:00:00+00:00",
             "referenceNumber": "ref",
-            "exceptionDetailList": [
-                {"exceptionCode": 123, "exceptionDescription": "Invalid NIP"}
-            ],
+            "exceptionDetailList": [{"exceptionCode": 123, "exceptionDescription": "Invalid NIP"}],
         }
     }
     resp = ApiErrorResponse.model_validate(data)

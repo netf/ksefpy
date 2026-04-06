@@ -31,36 +31,24 @@ class SessionStatusClient:
             f"sessions/{reference_number}/invoices/failed", access_token=access_token, params=params
         )
 
-    async def get_invoice_status(
-        self, session_ref: str, invoice_ref: str, *, access_token: str
-    ) -> dict:
+    async def get_invoice_status(self, session_ref: str, invoice_ref: str, *, access_token: str) -> dict:
         """GET /sessions/{ref}/invoices/{invoiceRef}"""
-        return await self._base.get(
-            f"sessions/{session_ref}/invoices/{invoice_ref}", access_token=access_token
-        )
+        return await self._base.get(f"sessions/{session_ref}/invoices/{invoice_ref}", access_token=access_token)
 
     async def get_upo(self, session_ref: str, upo_ref: str, *, access_token: str) -> dict:
         """GET /sessions/{ref}/upo/{upoRef}"""
         return await self._base.get(f"sessions/{session_ref}/upo/{upo_ref}", access_token=access_token)
 
-    async def get_upo_by_ksef_number(
-        self, session_ref: str, ksef_number: str, *, access_token: str
-    ) -> dict:
+    async def get_upo_by_ksef_number(self, session_ref: str, ksef_number: str, *, access_token: str) -> dict:
         """GET /sessions/{ref}/invoices/ksef/{ksefNumber}/upo"""
         return await self._base.get(
             f"sessions/{session_ref}/invoices/ksef/{ksef_number}/upo", access_token=access_token
         )
 
-    async def get_upo_by_invoice_reference(
-        self, session_ref: str, invoice_ref: str, *, access_token: str
-    ) -> dict:
+    async def get_upo_by_invoice_reference(self, session_ref: str, invoice_ref: str, *, access_token: str) -> dict:
         """GET /sessions/{ref}/invoices/{invoiceRef}/upo"""
-        return await self._base.get(
-            f"sessions/{session_ref}/invoices/{invoice_ref}/upo", access_token=access_token
-        )
+        return await self._base.get(f"sessions/{session_ref}/invoices/{invoice_ref}/upo", access_token=access_token)
 
-    async def list_sessions(
-        self, *, access_token: str, params: dict[str, Any] | None = None
-    ) -> dict:
+    async def list_sessions(self, *, access_token: str, params: dict[str, Any] | None = None) -> dict:
         """GET /sessions — list/query sessions with filters."""
         return await self._base.get("sessions", access_token=access_token, params=params)

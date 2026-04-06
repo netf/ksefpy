@@ -24,17 +24,18 @@ def _make_session(client):
 @pytest.mark.asyncio
 async def test_online_session_send_invoice():
     respx.post(f"{BASE}/sessions/online").mock(
-        return_value=httpx.Response(201, json={
-            "referenceNumber": "sess-1",
-            "validUntil": "2026-04-07T10:00:00+00:00",
-        })
+        return_value=httpx.Response(
+            201,
+            json={
+                "referenceNumber": "sess-1",
+                "validUntil": "2026-04-07T10:00:00+00:00",
+            },
+        )
     )
     respx.post(f"{BASE}/sessions/online/sess-1/invoices").mock(
         return_value=httpx.Response(201, json={"referenceNumber": "inv-1"})
     )
-    respx.post(f"{BASE}/sessions/online/sess-1/close").mock(
-        return_value=httpx.Response(200, json={})
-    )
+    respx.post(f"{BASE}/sessions/online/sess-1/close").mock(return_value=httpx.Response(200, json={}))
 
     async with AsyncKSeFClient(environment=Environment.TEST) as client:
         session = _make_session(client)

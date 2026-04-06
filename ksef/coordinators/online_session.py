@@ -128,6 +128,7 @@ class AsyncOnlineSessionManager:
     def _get_crypto(self) -> CryptographyService:
         if self._crypto is None:
             from ksef.crypto.service import CryptographyService
+
             self._crypto = CryptographyService()
         return self._crypto
 
@@ -143,10 +144,7 @@ class AsyncOnlineSessionManager:
 
         form_code = _FORM_CODE_MAP.get(schema_version)
         if form_code is None:
-            raise ValueError(
-                f"Unknown schema_version {schema_version!r}. "
-                f"Supported: {list(_FORM_CODE_MAP)}"
-            )
+            raise ValueError(f"Unknown schema_version {schema_version!r}. Supported: {list(_FORM_CODE_MAP)}")
 
         materials = crypto.generate_session_materials()
 

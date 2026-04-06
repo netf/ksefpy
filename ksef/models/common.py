@@ -32,5 +32,3 @@ class OperationStatusInfo(KSeFModel):
     code: int
     description: str
     details: list[str] = []
-
-

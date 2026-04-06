@@ -10,10 +10,12 @@ from cryptography.x509.oid import NameOID
 @pytest.fixture
 def test_cert_and_key():
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
-    subject = x509.Name([
-        x509.NameAttribute(NameOID.COMMON_NAME, "Test KSeF"),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Test Org"),
-    ])
+    subject = x509.Name(
+        [
+            x509.NameAttribute(NameOID.COMMON_NAME, "Test KSeF"),
+            x509.NameAttribute(NameOID.ORGANIZATION_NAME, "Test Org"),
+        ]
+    )
     cert = (
         x509.CertificateBuilder()
         .subject_name(subject)

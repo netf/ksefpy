@@ -53,13 +53,15 @@ def generate_test_certificate(nip: str) -> tuple[bytes, bytes]:
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
     # DN format matching C# client test utilities
-    subject = issuer = x509.Name([
-        x509.NameAttribute(NameOID.GIVEN_NAME, "Test"),
-        x509.NameAttribute(NameOID.SURNAME, "User"),
-        x509.NameAttribute(NameOID.SERIAL_NUMBER, f"TINPL-{nip}"),
-        x509.NameAttribute(NameOID.COMMON_NAME, "Test User"),
-        x509.NameAttribute(NameOID.COUNTRY_NAME, "PL"),
-    ])
+    subject = issuer = x509.Name(
+        [
+            x509.NameAttribute(NameOID.GIVEN_NAME, "Test"),
+            x509.NameAttribute(NameOID.SURNAME, "User"),
+            x509.NameAttribute(NameOID.SERIAL_NUMBER, f"TINPL-{nip}"),
+            x509.NameAttribute(NameOID.COMMON_NAME, "Test User"),
+            x509.NameAttribute(NameOID.COUNTRY_NAME, "PL"),
+        ]
+    )
 
     cert = (
         x509.CertificateBuilder()

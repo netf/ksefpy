@@ -139,9 +139,7 @@ class BaseClient:
             await self._handle_response(response)
         return response.content
 
-    async def put_raw(
-        self, url: str, *, content: bytes | None = None, headers: dict[str, str] | None = None
-    ) -> None:
+    async def put_raw(self, url: str, *, content: bytes | None = None, headers: dict[str, str] | None = None) -> None:
         """PUT to an absolute URL (for batch part uploads). No base URL prefix.
 
         The URL must use HTTPS to prevent SSRF attacks.

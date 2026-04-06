@@ -58,9 +58,7 @@ class AuthSession:
                     from ksef.exceptions import KSeFSessionError
 
                     raise KSeFSessionError("Refresh token has expired; full re-authentication required")
-                refresh_resp = await self._client.auth.refresh_token(
-                    refresh_token=self._refresh_token_info.token
-                )
+                refresh_resp = await self._client.auth.refresh_token(refresh_token=self._refresh_token_info.token)
                 self._access_token_info = refresh_resp.access_token
             return self._access_token_info.token
 
@@ -113,15 +111,11 @@ class AsyncAuthCoordinator:
             raw_tok = data.get("tokenEncryptionCertificate") or data.get("token")
             if raw_sym:
                 crypto.set_symmetric_key_certificate(
-                    _x509.load_pem_x509_certificate(
-                        raw_sym.encode() if isinstance(raw_sym, str) else raw_sym
-                    )
+                    _x509.load_pem_x509_certificate(raw_sym.encode() if isinstance(raw_sym, str) else raw_sym)
                 )
             if raw_tok:
                 crypto.set_ksef_token_certificate(
-                    _x509.load_pem_x509_certificate(
-                        raw_tok.encode() if isinstance(raw_tok, str) else raw_tok
-                    )
+                    _x509.load_pem_x509_certificate(raw_tok.encode() if isinstance(raw_tok, str) else raw_tok)
                 )
 
     async def _poll_auth_status(
@@ -147,9 +141,7 @@ class AsyncAuthCoordinator:
             if code == 200:
                 return
             if time.monotonic() >= deadline:
-                raise KSeFTimeoutError(
-                    f"Authentication polling timed out after {poll_timeout}s"
-                )
+                raise KSeFTimeoutError(f"Authentication polling timed out after {poll_timeout}s")
             await asyncio.sleep(poll_interval)
 
     async def authenticate_with_token(
@@ -195,9 +187,7 @@ class AsyncAuthCoordinator:
             poll_timeout=poll_timeout,
         )
 
-        redeem_resp = await self._client.auth.redeem_token(
-            authentication_token=authentication_token
-        )
+        redeem_resp = await self._client.auth.redeem_token(authentication_token=authentication_token)
 
         return AuthSession(
             client=self._client,
@@ -272,9 +262,7 @@ class AsyncAuthCoordinator:
             poll_timeout=poll_timeout,
         )
 
-        redeem_resp = await self._client.auth.redeem_token(
-            authentication_token=authentication_token
-        )
+        redeem_resp = await self._client.auth.redeem_token(authentication_token=authentication_token)
 
         return AuthSession(
             client=self._client,

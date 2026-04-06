@@ -37,6 +37,7 @@ from ksef.testing import generate_random_nip, generate_test_certificate
 # Scenario 1: Invalid token
 # ---------------------------------------------------------------------------
 
+
 async def demo_invalid_token() -> None:
     print("--- Scenario 1: KSeFAuthError (invalid token) ---")
     nip = generate_random_nip()
@@ -55,6 +56,7 @@ async def demo_invalid_token() -> None:
 # Scenario 2: Download non-existent invoice
 # ---------------------------------------------------------------------------
 
+
 async def demo_not_found() -> None:
     print("--- Scenario 2: KSeFError (invoice not found) ---")
     nip = generate_random_nip()
@@ -71,6 +73,7 @@ async def demo_not_found() -> None:
 # ---------------------------------------------------------------------------
 # Scenario 3: Demonstrate exception hierarchy
 # ---------------------------------------------------------------------------
+
 
 async def demo_exception_hierarchy() -> None:
     print("--- Scenario 3: Exception hierarchy ---")
@@ -97,6 +100,7 @@ async def demo_exception_hierarchy() -> None:
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+
 
 async def main() -> None:
     await demo_invalid_token()

@@ -53,8 +53,10 @@ class SyncWrapper:
     def __getattr__(self, name: str) -> Any:
         attr = getattr(self._async_client, name)
         if inspect.iscoroutinefunction(attr):
+
             def _sync_method(*args: Any, **kwargs: Any) -> Any:
                 return self._run_coroutine(attr(*args, **kwargs))
+
             return _sync_method
         # For sub-client objects, wrap and cache for reuse
         if not isinstance(attr, str | int | float | bool | type(None)):
@@ -77,7 +79,9 @@ class SyncSubClient:
         run_fn = object.__getattribute__(self, "_run_fn")
         attr = getattr(sub_client, name)
         if inspect.iscoroutinefunction(attr):
+
             def _sync_method(*args: Any, **kwargs: Any) -> Any:
                 return run_fn(attr(*args, **kwargs))
+
             return _sync_method
         return attr
