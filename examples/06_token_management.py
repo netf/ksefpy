@@ -30,7 +30,7 @@ async def main() -> None:
         # Step 2: Generate a new KSeF token.
         print("\nGenerating token ...")
         result = await client.create_token(
-            permissions={"permissions": ["InvoiceRead"]},
+            permissions=["InvoiceRead"],
             description="Example read-only token",
         )
         print(f"  Token reference:        {result.reference_number}")

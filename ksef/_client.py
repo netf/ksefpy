@@ -320,10 +320,25 @@ class AsyncKSeF:
             raise _map_api_error(exc) from exc
 
     async def export_invoices(self, **filters: Any) -> dict:
-        """Request an invoice export. Returns the raw API response."""
+        """Request an invoice export. Returns the raw API response.
+
+        Automatically adds ``encryption`` and wraps filters in the
+        ``filters`` key expected by the API.
+        """
+        await self._ensure_auth()
+        assert self._crypto is not None
         access_token = await self._get_access_token()
+
+        from ksef.models.sessions import EncryptionInfo
+
+        materials = self._crypto.generate_session_materials()
+        enc = EncryptionInfo.from_session_materials(materials)
+        body: dict[str, Any] = {
+            "filters": filters,
+            "encryption": enc.model_dump(by_alias=True),
+        }
         try:
-            return await self._client.invoices.export(filters, access_token=access_token)
+            return await self._client.invoices.export(body, access_token=access_token)
         except _ApiError as exc:
             raise _map_api_error(exc) from exc
 
