@@ -8,7 +8,7 @@ import os
 import pytest
 
 from ksef import AsyncKSeFClient, Environment
-from ksef.coordinators.auth import AsyncAuthCoordinator, AuthSession
+from ksef.coordinators.auth import AsyncAuthCoordinator
 from ksef.testing import generate_random_nip, generate_test_certificate
 
 
