@@ -241,19 +241,17 @@ class AsyncAuthCoordinator:
 
         challenge_resp = await self._client.auth.get_challenge()
 
-        # Build the AuthTokenRequest XML document
-        # Namespace and structure must match the C# client:
-        # - Namespace: http://ksef.mf.gov.pl/auth/token/2.0
-        # - ContextIdentifier uses element name matching the type (e.g. <Nip>)
-        # - SubjectIdentifierType is required
-        auth_xml = (
-            '<?xml version="1.0" encoding="UTF-8"?>'
-            '<AuthTokenRequest xmlns="http://ksef.mf.gov.pl/auth/token/2.0">'
-            f"<Challenge>{challenge_resp.challenge}</Challenge>"
-            f"<ContextIdentifier><Nip>{nip}</Nip></ContextIdentifier>"
-            "<SubjectIdentifierType>certificateSubject</SubjectIdentifierType>"
-            "</AuthTokenRequest>"
-        )
+        # Build the AuthTokenRequest XML document using ElementTree to prevent
+        # XML injection (nip and challenge are escaped automatically).
+        from xml.etree.ElementTree import Element, SubElement, tostring
+
+        ns = "http://ksef.mf.gov.pl/auth/token/2.0"
+        root = Element("AuthTokenRequest", xmlns=ns)
+        SubElement(root, "Challenge").text = challenge_resp.challenge
+        ctx_id = SubElement(root, "ContextIdentifier")
+        SubElement(ctx_id, "Nip").text = nip
+        SubElement(root, "SubjectIdentifierType").text = "certificateSubject"
+        auth_xml = '<?xml version="1.0" encoding="UTF-8"?>' + tostring(root, encoding="unicode")
 
         xades_service = XAdESService()
         signed_xml = xades_service.sign(

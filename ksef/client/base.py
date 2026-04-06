@@ -142,7 +142,12 @@ class BaseClient:
     async def put_raw(
         self, url: str, *, content: bytes | None = None, headers: dict[str, str] | None = None
     ) -> None:
-        """PUT to an absolute URL (for batch part uploads). No base URL prefix."""
+        """PUT to an absolute URL (for batch part uploads). No base URL prefix.
+
+        The URL must use HTTPS to prevent SSRF attacks.
+        """
+        if not url.startswith("https://"):
+            raise ValueError(f"put_raw requires HTTPS URL, got: {url[:50]}")
         response = await self._http.put(url, content=content, headers=headers or {})
         if response.status_code >= 400:
             await self._handle_response(response)

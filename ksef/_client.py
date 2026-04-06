@@ -160,6 +160,8 @@ class AsyncKSeF:
     ) -> None:
         if not nip:
             raise ValueError("nip is required")
+        if not (nip.isdigit() and len(nip) == 10):
+            raise ValueError(f"nip must be exactly 10 digits, got: {nip!r}")
         if token and (cert or key):
             raise ValueError("Provide either token OR (cert + key), not both")
         if not token and not (cert and key):
@@ -222,10 +224,21 @@ class AsyncKSeF:
             raise _map_api_error(exc) from exc
 
     async def _get_access_token(self) -> str:
-        """Return a valid access token, refreshing if needed."""
+        """Return a valid access token, refreshing if needed.
+
+        If the refresh token has expired, re-authenticates from scratch.
+        """
         await self._ensure_auth()
         assert self._auth_session is not None
-        return await self._auth_session.get_access_token()
+        try:
+            return await self._auth_session.get_access_token()
+        except KSeFError:
+            # Session expired — force re-authentication
+            self._auth_session = None
+            self._crypto = None
+            await self._ensure_auth()
+            assert self._auth_session is not None
+            return await self._auth_session.get_access_token()
 
     # ------------------------------------------------------------------
     # Invoice operations

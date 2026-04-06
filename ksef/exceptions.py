@@ -32,10 +32,17 @@ class KSeFError(Exception):
         super().__init__(message)
         self.raw_response: dict[str, Any] = raw_response or {}
 
+    _REDACTED_KEYS = {"token", "accessToken", "refreshToken", "authenticationToken", "encryptedToken"}
+
     def __str__(self) -> str:
         base = super().__str__()
         if self.raw_response:
-            return f"{base} (raw_response={self.raw_response!r})"
+            # Redact sensitive fields to prevent token leakage in logs
+            safe = {
+                k: ("***REDACTED***" if k in self._REDACTED_KEYS else v)
+                for k, v in self.raw_response.items()
+            }
+            return f"{base} (raw_response={safe!r})"
         return base
 
 
