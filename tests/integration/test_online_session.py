@@ -61,3 +61,57 @@ async def test_get_session_status(client: AsyncKSeF, session_data: dict):
     status = await client.get_session_status(session_data["session_ref"])
     assert isinstance(status, SessionStatus)
     assert status.invoice_count is not None
+
+
+async def test_download_sent_invoice(client: AsyncKSeF, nip: str):
+    """Send a fresh invoice, poll for ksefNumber, then download the XML."""
+    xml = generate_test_invoice_xml(nip)
+
+    # Send in a session so we get the session reference
+    async with client.session() as s:
+        result = await s.send(xml)
+        session_ref = s.reference_number
+    invoice_ref = result.reference_number
+
+    # Poll until ksefNumber is assigned
+    await client._ensure_auth()
+    ksef_number = None
+    for _ in range(30):
+        await asyncio.sleep(3)
+        token = await client._get_access_token()
+        inv = await client._client.session_status.get_invoice_status(
+            session_ref, invoice_ref, access_token=token,
+        )
+        ksef_number = inv.get("ksefNumber")
+        if ksef_number:
+            break
+
+    assert ksef_number, "ksefNumber not assigned within 90s"
+
+    # Download with retry (server may need a moment after assigning the number)
+    xml_bytes = None
+    for _ in range(5):
+        try:
+            xml_bytes = await client.download_invoice(ksef_number)
+            break
+        except Exception:
+            await asyncio.sleep(3)
+
+    assert xml_bytes is not None, "download_invoice failed after 5 retries"
+    assert len(xml_bytes) > 0
+    assert b"Faktura" in xml_bytes
+
+
+async def test_qr_url(client: AsyncKSeF):
+    """qr_url() builds a valid KSeF QR verification URL."""
+    from datetime import date
+
+    url = client.qr_url(
+        invoice_date=date(2026, 4, 6),
+        seller_nip="1234567890",
+        file_hash="abc123def456",
+    )
+    assert url.startswith("https://qr-test.ksef.mf.gov.pl/")
+    assert "06-04-2026" in url
+    assert "1234567890" in url
+    assert "abc123def456" in url
