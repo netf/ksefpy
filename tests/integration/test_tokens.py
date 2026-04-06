@@ -5,8 +5,7 @@ from __future__ import annotations
 import pytest
 import pytest_asyncio
 
-from ksef import AsyncKSeF
-from ksef.result import TokenResult
+from ksef import AsyncKSeF, TokenResult
 
 pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")]
 

@@ -15,6 +15,7 @@ from contextlib import asynccontextmanager
 from datetime import date
 from typing import Any
 
+from ksef._types import InvoiceResult, LimitsInfo, SessionStatus, TokenResult
 from ksef.client import AsyncKSeFClient
 from ksef.coordinators.auth import AsyncAuthCoordinator, AuthSession
 from ksef.coordinators.online_session import AsyncOnlineSessionManager, OnlineSessionContext
@@ -28,7 +29,6 @@ from ksef.exceptions import (
     KSeFServerError,
     _ApiError,
 )
-from ksef.result import InvoiceResult, LimitsInfo, SessionStatus, TokenResult
 
 # ---------------------------------------------------------------------------
 # Error mapping: _ApiError -> public exceptions

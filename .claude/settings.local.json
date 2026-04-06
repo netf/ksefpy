@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(gh api:*)",
+      "Bash(grep -E '\\\\.cs$')",
+      "Bash(grep '\\\\.cs$')",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(uv --version)",
+      "Bash(uv sync:*)",
+      "Bash(uv run:*)",
+      "Bash(git commit:*)",
+      "Bash(git -C /Users/netf/Projects/ksefpy add ksef/client/__init__.py ksef/client/base.py tests/unit/test_base_client.py)",
+      "Bash(git -C /Users/netf/Projects/ksefpy commit -m ':*)",
+      "Bash(chmod +x:*)",
+      "Bash(python3:*)",
+      "Bash(uv pip:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)",
+      "Bash(python:*)",
+      "WebFetch(domain:api-test.ksef.mf.gov.pl)",
+      "Bash(curl -s https://api-test.ksef.mf.gov.pl/docs/v2/openapi.json -o /tmp/ksef-openapi.json)",
+      "Read(//tmp/**)",
+      "Bash(grep -v '.cs$')",
+      "Bash(grep '.cs$')",
+      "Bash(ls:*)",
+      "Bash(git stash:*)",
+      "Bash(wc -l examples/*.py examples/README.md)",
+      "Bash(grep:*)",
+      "Bash(git mv:*)"
+    ]
+  }
+}

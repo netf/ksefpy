@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from ksef import AsyncKSeF
-from ksef.result import LimitsInfo
+from ksef import AsyncKSeF, LimitsInfo
 
 pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")]
 

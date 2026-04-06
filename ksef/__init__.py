@@ -15,10 +15,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from ksef._client import AsyncKSeF
 from ksef._sync import SyncWrapper
+from ksef._types import InvoiceResult, LimitsInfo, SessionStatus, TokenResult
 from ksef._version import __version__
 from ksef.client import AsyncKSeFClient  # backward-compat
-from ksef.easy import AsyncKSeF
 from ksef.environments import Environment
 from ksef.exceptions import (
     KSeFAuthError,
@@ -30,7 +31,6 @@ from ksef.exceptions import (
     KSeFSessionError,
     KSeFTimeoutError,
 )
-from ksef.result import InvoiceResult, LimitsInfo, SessionStatus, TokenResult
 
 
 class KSeF:

@@ -7,8 +7,7 @@ import asyncio
 import pytest
 import pytest_asyncio
 
-from ksef import AsyncKSeF
-from ksef.result import InvoiceResult, SessionStatus
+from ksef import AsyncKSeF, InvoiceResult, SessionStatus
 from ksef.testing import generate_test_invoice_xml
 
 pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")]

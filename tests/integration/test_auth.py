@@ -4,8 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from ksef import AsyncKSeF
-from ksef.result import InvoiceResult
+from ksef import AsyncKSeF, InvoiceResult
 from ksef.testing import generate_test_invoice_xml
 
 pytestmark = [pytest.mark.integration, pytest.mark.asyncio(loop_scope="session")]
