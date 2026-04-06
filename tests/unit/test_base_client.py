@@ -5,13 +5,7 @@ import respx
 from ksef.client import AsyncKSeFClient
 from ksef.client.base import BaseClient
 from ksef.environments import Environment
-from ksef.exceptions import (
-    KSeFApiError,
-    KSeFForbiddenError,
-    KSeFRateLimitError,
-    KSeFServerError,
-    KSeFUnauthorizedError,
-)
+from ksef.exceptions import _ApiError
 
 
 @pytest.fixture
@@ -60,49 +54,52 @@ async def test_400_raises_api_error(base_client: BaseClient):
             json={"exception": {"serviceCode": "20001", "exceptionDetailList": []}},
         )
     )
-    with pytest.raises(KSeFApiError) as exc_info:
+    with pytest.raises(_ApiError) as exc_info:
         await base_client.post("bad")
     assert exc_info.value.status_code == 400
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_401_raises_unauthorized(base_client: BaseClient):
+async def test_401_raises_api_error(base_client: BaseClient):
     respx.get("https://api-test.ksef.mf.gov.pl/v2/auth").mock(
         return_value=httpx.Response(401, json={"type": "about:blank", "title": "Unauthorized"})
     )
-    with pytest.raises(KSeFUnauthorizedError):
+    with pytest.raises(_ApiError) as exc_info:
         await base_client.get("auth")
+    assert exc_info.value.status_code == 401
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_403_raises_forbidden(base_client: BaseClient):
+async def test_403_raises_api_error(base_client: BaseClient):
     respx.get("https://api-test.ksef.mf.gov.pl/v2/perm").mock(
         return_value=httpx.Response(403, json={"type": "about:blank", "title": "Forbidden"})
     )
-    with pytest.raises(KSeFForbiddenError):
+    with pytest.raises(_ApiError) as exc_info:
         await base_client.get("perm")
+    assert exc_info.value.status_code == 403
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_429_raises_rate_limit(base_client: BaseClient):
+async def test_429_raises_api_error_with_retry_after(base_client: BaseClient):
     respx.post("https://api-test.ksef.mf.gov.pl/v2/invoke").mock(
         return_value=httpx.Response(429, headers={"Retry-After": "30"}, json={})
     )
-    with pytest.raises(KSeFRateLimitError) as exc_info:
+    with pytest.raises(_ApiError) as exc_info:
         await base_client.post("invoke")
+    assert exc_info.value.status_code == 429
     assert exc_info.value.retry_after == 30.0
 
 
 @respx.mock
 @pytest.mark.asyncio
-async def test_500_raises_server_error(base_client: BaseClient):
+async def test_500_raises_api_error(base_client: BaseClient):
     respx.get("https://api-test.ksef.mf.gov.pl/v2/down").mock(
         return_value=httpx.Response(502, text="Bad Gateway")
     )
-    with pytest.raises(KSeFServerError) as exc_info:
+    with pytest.raises(_ApiError) as exc_info:
         await base_client.get("down")
     assert exc_info.value.status_code == 502
 

@@ -6,13 +6,7 @@ from typing import Any
 import httpx
 
 from ksef.environments import Environment
-from ksef.exceptions import (
-    KSeFApiError,
-    KSeFForbiddenError,
-    KSeFRateLimitError,
-    KSeFServerError,
-    KSeFUnauthorizedError,
-)
+from ksef.exceptions import _ApiError
 
 logger = logging.getLogger("ksef")
 
@@ -68,49 +62,24 @@ class BaseClient:
         except Exception:
             pass
 
-        if status == 401:
-            raise KSeFUnauthorizedError(
-                message=body.get("title", "Unauthorized"),
-                problem=body,
-            )
-        if status == 403:
-            raise KSeFForbiddenError(
-                message=body.get("title", "Forbidden"),
-                problem=body,
-            )
+        retry_after: float | None = None
         if status == 429:
-            retry_after: float | None = None
             raw = response.headers.get("Retry-After")
             if raw:
                 try:
                     retry_after = float(raw)
                 except ValueError:
                     pass
-            raise KSeFRateLimitError(
-                message="Rate limited",
-                retry_after=retry_after,
-            )
-        if status >= 500:
-            raise KSeFServerError(
-                message=body.get("title", response.text[:200] if response.text else "Server error"),
-                status_code=status,
-            )
 
-        error_code: str | None = None
-        details: list[dict[str, Any]] = []
-        if "exception" in body:
-            exc_content = body["exception"]
-            error_code = exc_content.get("serviceCode")
-            details = exc_content.get("exceptionDetailList", [])
-
-        message = f"API error {status}"
-        if not error_code and not details and response.text:
+        message = body.get("title", "") or f"API error {status}"
+        if not body and response.text:
             message = f"API error {status}: {response.text[:200]}"
-        raise KSeFApiError(
-            message=message,
+
+        raise _ApiError(
+            message,
             status_code=status,
-            error_code=error_code,
-            details=details,
+            raw_response=body,
+            retry_after=retry_after,
         )
 
     async def get(

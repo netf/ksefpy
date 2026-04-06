@@ -1,70 +1,87 @@
 from ksef.exceptions import (
-    KSeFApiError,
+    KSeFAuthError,
     KSeFCryptoError,
     KSeFError,
-    KSeFForbiddenError,
+    KSeFInvoiceError,
+    KSeFPermissionError,
     KSeFRateLimitError,
     KSeFServerError,
     KSeFSessionError,
     KSeFTimeoutError,
-    KSeFUnauthorizedError,
     KSeFXmlError,
+    _ApiError,
 )
 
 
 def test_ksef_error_is_base():
     err = KSeFError("something broke")
     assert isinstance(err, Exception)
-    assert str(err) == "something broke"
+    assert "something broke" in str(err)
 
 
-def test_api_error_carries_status_and_details():
-    err = KSeFApiError(
-        message="bad request",
-        status_code=400,
-        error_code="INVALID_INPUT",
-        details=[{"field": "nip", "message": "invalid"}],
-    )
-    assert err.status_code == 400
-    assert err.error_code == "INVALID_INPUT"
-    assert err.details[0]["field"] == "nip"
+def test_ksef_error_carries_raw_response():
+    err = KSeFError("bad", raw_response={"detail": "nope"})
+    assert err.raw_response == {"detail": "nope"}
+    assert "nope" in str(err)
+
+
+def test_ksef_error_default_raw_response():
+    err = KSeFError("simple")
+    assert err.raw_response == {}
+
+
+def test_auth_error():
+    err = KSeFAuthError("not authed", raw_response={"title": "Unauthorized"})
     assert isinstance(err, KSeFError)
+    assert err.raw_response["title"] == "Unauthorized"
 
 
-def test_unauthorized_error():
-    err = KSeFUnauthorizedError(message="not authed", problem={"type": "about:blank", "title": "Unauthorized"})
-    assert err.status_code == 401
-    assert err.problem["title"] == "Unauthorized"
+def test_invoice_error():
+    err = KSeFInvoiceError("bad invoice", raw_response={"code": "INVALID_INPUT"})
+    assert isinstance(err, KSeFError)
+    assert err.raw_response["code"] == "INVALID_INPUT"
 
 
-def test_forbidden_error():
-    err = KSeFForbiddenError(message="no access", problem={"type": "about:blank", "title": "Forbidden"})
-    assert err.status_code == 403
+def test_permission_error():
+    err = KSeFPermissionError("no access", raw_response={"title": "Forbidden"})
+    assert isinstance(err, KSeFError)
 
 
 def test_rate_limit_error():
     err = KSeFRateLimitError(
-        message="too many requests",
+        "too many requests",
         retry_after=30.0,
-        limit=100,
-        remaining=0,
+        raw_response={"error": "rate limited"},
     )
-    assert err.status_code == 429
+    assert isinstance(err, KSeFError)
     assert err.retry_after == 30.0
-    assert err.limit == 100
-    assert err.remaining == 0
+    assert "retry_after=30.0" in str(err)
+
+
+def test_rate_limit_error_without_retry_after():
+    err = KSeFRateLimitError("slow down")
+    assert err.retry_after is None
 
 
 def test_server_error():
-    err = KSeFServerError(message="internal error", status_code=502)
+    err = KSeFServerError("internal error", status_code=502)
+    assert isinstance(err, KSeFError)
     assert err.status_code == 502
-    assert isinstance(err, KSeFApiError)
+
+
+def test_session_error():
+    err = KSeFSessionError("expired")
+    assert isinstance(err, KSeFError)
+
+
+def test_timeout_error():
+    err = KSeFTimeoutError("polling timed out")
+    assert isinstance(err, KSeFError)
 
 
 def test_crypto_error():
     err = KSeFCryptoError("encryption failed")
     assert isinstance(err, KSeFError)
-    assert not isinstance(err, KSeFApiError)
 
 
 def test_xml_error_carries_validation_errors():
@@ -73,9 +90,13 @@ def test_xml_error_carries_validation_errors():
     assert isinstance(err, KSeFError)
 
 
-def test_session_error():
-    assert isinstance(KSeFSessionError("expired"), KSeFError)
+def test_internal_api_error():
+    err = _ApiError("bad request", status_code=400, raw_response={"detail": "nope"})
+    assert err.status_code == 400
+    assert err.raw_response == {"detail": "nope"}
+    assert not isinstance(err, KSeFError)  # _ApiError is internal, not public
 
 
-def test_timeout_error():
-    assert isinstance(KSeFTimeoutError("polling timed out"), KSeFError)
+def test_internal_api_error_retry_after():
+    err = _ApiError("rate limited", status_code=429, retry_after=60.0)
+    assert err.retry_after == 60.0
