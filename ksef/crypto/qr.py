@@ -88,7 +88,7 @@ def generate_qr_code_1(
 
     Requires the ``[qr]`` optional extra::
 
-        pip install ksefpy[qr]
+        pip install ksef-python[qr]
 
     Parameters
     ----------
@@ -112,7 +112,7 @@ def generate_qr_code_1(
     try:
         import qrcode  # type: ignore[import]
     except ModuleNotFoundError as exc:
-        raise KSeFCryptoError("qrcode is not installed. Install it with: pip install ksefpy[qr]") from exc
+        raise KSeFCryptoError("qrcode is not installed. Install it with: pip install ksef-python[qr]") from exc
 
     url = build_qr_code_1_url(
         environment=environment,

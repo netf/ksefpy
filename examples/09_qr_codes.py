@@ -8,8 +8,8 @@ Run:
     uv run python examples/09_qr_codes.py
 
 Requirements:
-    pip install ksefpy            # URL generation only
-    pip install ksefpy[qr]        # URL + image generation
+    pip install ksef-python            # URL generation only
+    pip install ksef-python[qr]        # URL + image generation
 """
 
 from __future__ import annotations
@@ -74,7 +74,7 @@ def main() -> None:
         print(f"  QR image saved to: {output_path}")
     except ImportError:
         print("  ksef[qr] not installed -- skipping image generation.")
-        print("  Install with: pip install ksefpy[qr]")
+        print("  Install with: pip install ksef-python[qr]")
 
     print("\nDone!")
 

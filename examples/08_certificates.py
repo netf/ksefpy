@@ -7,7 +7,7 @@ Run:
     uv run python examples/08_certificates.py
 
 Requirements:
-    pip install ksefpy[xades]
+    pip install ksef-python[xades]
 """
 
 from __future__ import annotations

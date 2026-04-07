@@ -1,7 +1,7 @@
-# ksefpy
+# ksef-python
 
-[![PyPI](https://img.shields.io/pypi/v/ksefpy.svg)](https://pypi.org/project/ksefpy/)
-[![CI](https://github.com/netf/ksefpy/actions/workflows/ci.yml/badge.svg)](https://github.com/netf/ksefpy/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/ksef-python.svg)](https://pypi.org/project/ksef-python/)
+[![CI](https://github.com/netf/ksef-python/actions/workflows/ci.yml/badge.svg)](https://github.com/netf/ksef-python/actions/workflows/ci.yml)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
@@ -30,25 +30,25 @@ with KSeF(nip="1234567890", token="your-token", env="test") as client:
 ## Install
 
 ```sh
-pip install ksefpy
+pip install ksef-python
 ```
 
 With XAdES certificate authentication:
 
 ```sh
-pip install ksefpy[xades]
+pip install ksef-python[xades]
 ```
 
 With QR code generation:
 
 ```sh
-pip install ksefpy[qr]
+pip install ksef-python[qr]
 ```
 
 Everything:
 
 ```sh
-pip install ksefpy[all]
+pip install ksef-python[all]
 ```
 
 ## Quick Start

@@ -8,7 +8,7 @@ Run:
     uv run python examples/01_authenticate_token.py
 
 Requirements:
-    pip install ksefpy[xades]
+    pip install ksef-python[xades]
 """
 
 from __future__ import annotations

@@ -10,7 +10,7 @@ class XAdESService:
 
     Requires ``signxml`` to be installed::
 
-        pip install ksefpy[xades]
+        pip install ksef-python[xades]
     """
 
     def sign(
@@ -39,7 +39,7 @@ class XAdESService:
         try:
             from signxml.xades import XAdESSigner  # type: ignore[import]
         except ModuleNotFoundError as exc:
-            raise KSeFCryptoError("signxml is not installed. Install it with: pip install ksefpy[xades]") from exc
+            raise KSeFCryptoError("signxml is not installed. Install it with: pip install ksef-python[xades]") from exc
 
         try:
             from lxml import etree  # type: ignore[import]

@@ -9,7 +9,7 @@ Run:
     uv run python examples/06_token_management.py
 
 Requirements:
-    pip install ksefpy[xades]
+    pip install ksef-python[xades]
 """
 
 from __future__ import annotations

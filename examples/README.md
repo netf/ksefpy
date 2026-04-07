@@ -29,6 +29,6 @@ uv run python examples/03_send_invoice.py
 
 ## Prerequisites
 
-- `pip install ksefpy[all]` for all examples
-- Or `pip install ksefpy[xades]` for certificate auth examples
-- Or `pip install ksefpy[qr]` for QR code examples
+- `pip install ksef-python[all]` for all examples
+- Or `pip install ksef-python[xades]` for certificate auth examples
+- Or `pip install ksef-python[qr]` for QR code examples

@@ -8,7 +8,7 @@ Run:
     uv run python examples/14_invoice_export.py
 
 Requirements:
-    pip install ksefpy[xades]
+    pip install ksef-python[xades]
 """
 
 from __future__ import annotations
