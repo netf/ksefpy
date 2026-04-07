@@ -30,7 +30,15 @@
       "Bash(wc -l examples/*.py examples/README.md)",
       "Bash(grep:*)",
       "Bash(git mv:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(uvx ruff:*)",
+      "Bash(uvx pre-commit:*)",
+      "Bash(uvx pip:*)",
+      "Bash(uv build:*)",
+      "Bash(git rm:*)",
+      "Bash(uvx twine:*)",
+      "Bash(git tag:*)",
+      "Bash(curl:*)"
     ]
   }
 }
